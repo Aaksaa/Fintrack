@@ -1,0 +1,1927 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panduan Setup & Deployment — Fintrack Docs</title>
+    <meta
+      name="description"
+      content="Panduan resmi memasang dan menjalankan Fintrack dengan Google Apps Script. / Official guide to install and run Fintrack with Google Apps Script."
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <!-- Fonts: Roobert PRO (jika tersedia lokal) → fallback Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1c1c1e",
+              ink: "#1c1c1e",
+              "ink-deep": "#050038",
+              charcoal: "#2c2c34",
+              canvas: "#ffffff",
+              surface: "#f7f8fa",
+              "surface-soft": "#fafbfc",
+              "surface-yellow": "#fff8e0",
+              hairline: "#e0e2e8",
+              "hairline-soft": "#eef0f3",
+              "hairline-strong": "#c7cad5",
+              slate: "#555a6a",
+              steel: "#6b6f7e",
+              stone: "#8e91a0",
+              muted: "#a5a8b5",
+              brand: "#ffd02f",
+              "brand-deep": "#fcb900",
+              "yellow-light": "#fff4c4",
+              "yellow-dark": "#746019",
+              blue: "#4262ff",
+              "coral-light": "#ffc6c6",
+              "coral-dark": "#600000",
+              "teal-light": "#c3faf5",
+              "moss-dark": "#187574",
+              "rose-light": "#fde0f0",
+              success: "#00b473",
+              "on-dark": "#ffffff",
+              "on-dark-muted": "#a5a8b5",
+              footer: "#1c1c1e",
+            },
+            fontFamily: {
+              sans: [
+                '"Roobert PRO"',
+                '"Noto Sans"',
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "sans-serif",
+              ],
+              mono: [
+                '"JetBrains Mono"',
+                "ui-monospace",
+                "SFMono-Regular",
+                "monospace",
+              ],
+            },
+            boxShadow: { card: "rgba(5,0,56,0.06) 0px 4px 12px 0px" },
+            maxWidth: { page: "1280px" },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      [v-cloak] {
+        display: none;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family:
+          "Roobert PRO",
+          "Noto Sans",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+      ::selection {
+        background: #ffd02f;
+        color: #1c1c1e;
+      }
+
+      /* Gaya inline untuk konten v-html */
+      .doc-body code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.84em;
+        background: #f7f8fa;
+        border: 1px solid #eef0f3;
+        border-radius: 6px;
+        padding: 2px 6px;
+        color: #1c1c1e;
+        white-space: nowrap;
+      }
+      .doc-body kbd {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.8em;
+        background: #fff;
+        border: 1px solid #c7cad5;
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        padding: 2px 6px;
+        color: #1c1c1e;
+      }
+      .doc-body a.inline {
+        color: #4262ff;
+        font-weight: 500;
+      }
+      .doc-body a.inline:hover {
+        text-decoration: underline;
+      }
+
+      .thin-scroll::-webkit-scrollbar {
+        height: 6px;
+      }
+      .thin-scroll::-webkit-scrollbar-thumb {
+        background: #c7cad5;
+        border-radius: 9999px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-canvas text-ink antialiased">
+    <div id="app" v-cloak>
+      <!-- ══════════════ PROMO BANNER ══════════════ -->
+      <div
+        v-if="showBanner"
+        class="bg-primary text-on-dark text-sm font-medium"
+      >
+        <div
+          class="max-w-page mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-center gap-3 relative"
+        >
+          <span
+            class="hidden sm:inline-block bg-brand text-primary text-[11px] font-semibold uppercase tracking-wide rounded-full px-2.5 py-0.5"
+            >{{ t.promo.tag }}</span
+          >
+          <p class="text-[13px] sm:text-sm text-center">{{ t.promo.text }}</p>
+          <a
+            href="#intro"
+            class="hidden sm:inline text-brand hover:text-brand-deep transition-colors text-[13px] font-medium whitespace-nowrap"
+            >{{ t.promo.cta }}
+            <i class="fa-solid fa-arrow-right text-[11px]"></i
+          ></a>
+          <button
+            @click="showBanner=false"
+            :aria-label="t.promo.dismiss"
+            class="absolute right-3 w-6 h-6 grid place-items-center rounded-full text-on-dark-muted hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════ PROGRESS BAR ══════════════ -->
+      <div
+        class="fixed top-0 left-0 right-0 h-[2px] z-[60] pointer-events-none"
+      >
+        <div
+          class="h-full bg-brand-deep transition-[width] duration-150 ease-out"
+          :style="{ width: progress + '%' }"
+        ></div>
+      </div>
+
+      <!-- ══════════════ TOP NAV ══════════════ -->
+      <header
+        class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-hairline"
+      >
+        <div
+          class="max-w-page mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3"
+        >
+          <a href="./index.html" class="flex items-center gap-2.5 shrink-0 group">
+            <img
+              src="assets/fintrack-logo.webp"
+              alt="Fintrack"
+              class="w-8 h-8 rounded-lg object-cover"
+            />
+            <span class="font-medium text-lg tracking-tight">Fintrack</span>
+            <span
+              class="bg-surface-yellow text-yellow-dark text-[11px] font-semibold rounded-full px-2 py-0.5"
+              >{{ t.nav.docsBadge }}</span
+            >
+          </a>
+          <nav class="hidden lg:flex items-center gap-6">
+            <a
+              v-for="l in t.nav.links"
+              :key="l.href"
+              :href="l.href"
+              class="text-sm text-slate hover:text-ink transition-colors"
+              >{{ l.label }}</a
+            >
+          </nav>
+          <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Language switch -->
+            <div
+              class="flex items-center rounded-full border border-hairline-strong p-0.5"
+              role="group"
+              aria-label="Language"
+            >
+              <button
+                v-for="l in ['id','en']"
+                :key="l"
+                @click="setLang(l)"
+                class="px-2.5 py-1 rounded-full text-[12px] font-semibold uppercase tracking-wide transition-colors"
+                :class="lang===l ? 'bg-primary text-white' : 'text-steel hover:text-ink'"
+              >
+                {{ l }}
+              </button>
+            </div>
+            <a
+              href="./index.html"
+              class="hidden md:flex items-center gap-1.5 text-sm text-slate hover:text-ink transition-colors"
+            >
+              <i class="fa-solid fa-house text-xs"></i> {{ t.nav.home }}
+            </a>
+            <a
+              href="https://github.com/Aaksaa/fintrack"
+              target="_blank"
+              rel="noopener"
+              class="hidden sm:inline-flex items-center gap-2 bg-primary text-white text-sm font-medium rounded-full px-4 py-2.5 active:bg-charcoal transition-colors"
+            >
+              <i class="fa-brands fa-github"></i> {{ t.nav.repo }}
+            </a>
+            <a
+              href="https://github.com/Aaksaa/fintrack"
+              target="_blank"
+              rel="noopener"
+              aria-label="GitHub"
+              class="sm:hidden w-10 h-10 grid place-items-center rounded-full border border-hairline text-ink"
+            >
+              <i class="fa-brands fa-github"></i>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main class="max-w-page mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- ══════════════ PAGE HEADER ══════════════ -->
+        <div class="pt-10 lg:pt-16 pb-8 border-b border-hairline-soft">
+          <nav class="text-[13px] text-stone mb-4 flex items-center gap-1.5">
+            <a href="/index.html" class="hover:text-ink transition-colors"
+              >{{ t.crumbHome }}</a
+            >
+            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            <span class="text-slate">{{ t.crumbDocs }}</span>
+          </nav>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <span
+              class="bg-surface-yellow text-yellow-dark text-[13px] font-semibold rounded-full px-3 py-1 inline-flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-book-open text-[11px]"></i> {{ t.hero.badge
+              }}
+            </span>
+            <span
+              class="text-[13px] font-semibold rounded-full px-3 py-1 border border-hairline text-steel"
+              >v1.0</span
+            >
+          </div>
+          <h1
+            class="text-[32px] sm:text-[40px] lg:text-[48px] font-medium leading-[1.12] tracking-[-0.02em] max-w-3xl"
+          >
+            {{ t.hero.title }}
+          </h1>
+          <p
+            class="mt-4 text-[16px] lg:text-[18px] leading-relaxed text-slate max-w-2xl"
+          >
+            {{ t.hero.subtitle }}
+          </p>
+          <div class="mt-6 flex flex-wrap gap-2">
+            <span
+              v-for="m in t.hero.meta"
+              :key="m.text"
+              class="inline-flex items-center gap-2 text-[13px] font-medium text-slate border border-hairline rounded-full px-3.5 py-1.5 bg-white"
+            >
+              <i
+                class="fa-solid"
+                :class="[m.icon, 'text-stone text-[12px]']"
+              ></i>
+              {{ m.text }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ══════════════ BODY GRID ══════════════ -->
+        <div
+          class="lg:grid lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-14 py-8 lg:py-12"
+        >
+          <!-- ── Sidebar TOC (desktop) ── -->
+          <aside class="hidden lg:block">
+            <nav class="sticky top-24">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-3"
+              >
+                {{ t.hero.tocTitle }}
+              </p>
+              <ul class="border-l border-hairline space-y-0.5">
+                <li v-for="(item, i) in t.toc" :key="item.id">
+                  <a
+                    :href="'#' + item.id"
+                    class="block pl-4 pr-2 py-1.5 text-sm border-l-2 -ml-px transition-colors"
+                    :class="active === item.id
+                  ? 'border-brand-deep text-ink font-medium bg-surface-yellow/70 rounded-r-md'
+                  : 'border-transparent text-steel hover:text-ink'"
+                  >
+                    <span class="text-[11px] font-semibold text-stone mr-1.5"
+                      >{{ String(i + 1).padStart(2, '0') }}</span
+                    >{{ item.label }}
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </aside>
+
+          <!-- ── Content ── -->
+          <div class="min-w-0">
+            <!-- TOC mobile (collapsible) -->
+            <div
+              class="lg:hidden mb-8 rounded-xl border border-hairline bg-surface-soft overflow-hidden"
+            >
+              <button
+                @click="tocOpen = !tocOpen"
+                class="w-full flex items-center justify-between px-4 py-3.5"
+              >
+                <span class="font-medium text-sm flex items-center gap-2"
+                  ><i class="fa-solid fa-list-ul text-stone"></i> {{
+                  t.hero.tocTitle }}</span
+                >
+                <i
+                  class="fa-solid fa-chevron-down text-stone text-xs transition-transform duration-300"
+                  :class="tocOpen && 'rotate-180'"
+                ></i>
+              </button>
+              <div
+                class="grid transition-[grid-template-rows] duration-300 ease-out"
+                :style="{ gridTemplateRows: tocOpen ? '1fr' : '0fr' }"
+              >
+                <div class="overflow-hidden">
+                  <ul class="px-2 pb-2">
+                    <li v-for="(item, i) in t.toc" :key="item.id">
+                      <a
+                        :href="'#' + item.id"
+                        @click="tocOpen = false"
+                        class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate hover:bg-white hover:text-ink transition-colors"
+                        :class="active === item.id && 'bg-white text-ink font-medium shadow-card'"
+                      >
+                        <span class="text-[11px] font-semibold text-stone w-5"
+                          >{{ String(i + 1).padStart(2, '0') }}</span
+                        >{{ item.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-14 lg:space-y-16">
+              <!-- ════════ 01 · PENDAHULUAN ════════ -->
+              <section id="intro" class="scroll-mt-28">
+                <div class="flex items-center gap-3 mb-3">
+                  <span
+                    class="w-9 h-9 rounded-lg bg-surface border border-hairline grid place-items-center text-slate"
+                    ><i class="fa-solid fa-book-open text-sm"></i
+                  ></span>
+                  <h2
+                    class="text-[24px] lg:text-[28px] font-medium leading-tight tracking-[-0.01em]"
+                  >
+                    {{ t.intro.title }}
+                  </h2>
+                </div>
+                <p
+                  class="text-[15px] lg:text-base leading-relaxed text-slate max-w-3xl"
+                >
+                  {{ t.intro.body }}
+                </p>
+                <ul class="mt-5 grid sm:grid-cols-3 gap-3 max-w-3xl">
+                  <li
+                    v-for="tip in t.intro.tips"
+                    :key="tip"
+                    class="flex items-start gap-2.5 rounded-xl border border-hairline-soft bg-white p-3.5"
+                  >
+                    <i
+                      class="fa-solid fa-circle-check text-success mt-0.5 text-sm"
+                    ></i>
+                    <span class="text-[13px] leading-snug text-slate"
+                      >{{ tip }}</span
+                    >
+                  </li>
+                </ul>
+                <div
+                  class="mt-5 rounded-xl bg-surface-yellow p-4 flex gap-3 max-w-3xl"
+                >
+                  <i
+                    class="fa-solid fa-circle-info text-yellow-dark mt-0.5"
+                  ></i>
+                  <p
+                    class="text-sm leading-relaxed text-ink/90 doc-body"
+                    v-html="t.intro.note"
+                  ></p>
+                </div>
+              </section>
+
+              <!-- ════════ 02 · PRASYARAT ════════ -->
+              <section id="prerequisites" class="scroll-mt-28">
+                <div class="flex items-center gap-3 mb-3">
+                  <span
+                    class="w-9 h-9 rounded-lg bg-surface border border-hairline grid place-items-center text-slate"
+                    ><i class="fa-solid fa-list-check text-sm"></i
+                  ></span>
+                  <h2
+                    class="text-[24px] lg:text-[28px] font-medium leading-tight tracking-[-0.01em]"
+                  >
+                    {{ t.prereq.title }}
+                  </h2>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-3 max-w-3xl">
+                  <div
+                    v-for="p in t.prereq.items"
+                    :key="p.title"
+                    class="rounded-xl border border-hairline-soft bg-white p-4 flex gap-3"
+                  >
+                    <span
+                      class="w-9 h-9 shrink-0 rounded-lg bg-surface grid place-items-center text-slate"
+                      ><i class="fa-solid" :class="[p.icon, 'text-sm']"></i
+                    ></span>
+                    <div class="min-w-0">
+                      <p class="font-medium text-[15px]">{{ p.title }}</p>
+                      <p
+                        class="text-[13px] leading-relaxed text-slate mt-0.5 doc-body"
+                        v-html="p.desc"
+                      ></p>
+                      <a
+                        v-if="p.link"
+                        :href="p.link.href"
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-flex items-center gap-1.5 mt-2 text-[13px] font-medium text-blue hover:underline"
+                      >
+                        {{ p.link.label }}
+                        <i
+                          class="fa-solid fa-arrow-up-right-from-square text-[10px]"
+                        ></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ════════ 03 · LANGKAH 1 — GOOGLE SHEETS ════════ -->
+              <section id="step-1" class="scroll-mt-28">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="w-10 h-10 shrink-0 rounded-full bg-brand text-primary grid place-items-center font-semibold text-[15px]"
+                    >1</span
+                  >
+                  <div class="min-w-0">
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-1"
+                    >
+                      {{ t.steps[0].kicker }}
+                    </p>
+                    <h3
+                      class="text-[22px] lg:text-[26px] font-medium leading-snug tracking-[-0.01em]"
+                    >
+                      {{ t.steps[0].title }}
+                    </h3>
+                    <p
+                      class="mt-2 text-[15px] leading-relaxed text-slate doc-body"
+                      v-html="t.steps[0].lead"
+                    ></p>
+                  </div>
+                </div>
+                <ol class="mt-6 space-y-3.5 max-w-3xl">
+                  <li
+                    v-for="(s, i) in t.steps[0].items"
+                    :key="i"
+                    class="flex gap-3"
+                  >
+                    <span
+                      class="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-surface border border-hairline grid place-items-center text-[12px] font-semibold text-steel"
+                      >{{ i + 1 }}</span
+                    >
+                    <p
+                      class="text-[15px] leading-relaxed doc-body"
+                      v-html="s"
+                    ></p>
+                  </li>
+                </ol>
+
+                <!-- Mockup: URL spreadsheet -->
+                <figure
+                  class="mt-6 rounded-xl border border-hairline bg-white overflow-hidden max-w-3xl"
+                >
+                  <div
+                    class="flex items-center gap-3 px-4 py-2.5 border-b border-hairline-soft bg-surface"
+                  >
+                    <span class="flex gap-1.5 shrink-0">
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-hairline-strong"
+                      ></span>
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-hairline-strong"
+                      ></span>
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-hairline-strong"
+                      ></span>
+                    </span>
+                    <span
+                      class="flex-1 flex items-center gap-2 bg-white border border-hairline rounded-md px-3 py-1.5 text-[12px] font-mono text-slate overflow-x-auto whitespace-nowrap thin-scroll"
+                    >
+                      <i class="fa-solid fa-lock text-stone text-[10px]"></i>
+                      docs.google.com/spreadsheets/d/<mark
+                        class="bg-yellow-light text-ink font-semibold px-1 py-0.5 rounded border border-brand-deep/50"
+                        >1BxiMVs0XRA5nFMdKvBdBZjgm0_q9B6CelR123abc</mark
+                      >/edit#gid=0
+                    </span>
+                  </div>
+                  <figcaption
+                    class="px-4 py-3 flex items-start gap-2 text-[13px] leading-relaxed text-slate"
+                  >
+                    <i
+                      class="fa-solid fa-circle-info text-stone mt-0.5 shrink-0"
+                    ></i>
+                    {{ t.mocks.m1 }}
+                  </figcaption>
+                </figure>
+              </section>
+
+              <!-- ════════ 04 · LANGKAH 2 — PASANG KODE ════════ -->
+              <section id="step-2" class="scroll-mt-28">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="w-10 h-10 shrink-0 rounded-full bg-brand text-primary grid place-items-center font-semibold text-[15px]"
+                    >2</span
+                  >
+                  <div class="min-w-0">
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-1"
+                    >
+                      {{ t.steps[1].kicker }}
+                    </p>
+                    <h3
+                      class="text-[22px] lg:text-[26px] font-medium leading-snug tracking-[-0.01em]"
+                    >
+                      {{ t.steps[1].title }}
+                    </h3>
+                    <p
+                      class="mt-2 text-[15px] leading-relaxed text-slate doc-body"
+                      v-html="t.steps[1].lead"
+                    ></p>
+                  </div>
+                </div>
+
+                <!-- Sub: pilih metode ambil kode -->
+                <p
+                  class="mt-6 text-[13px] font-semibold uppercase tracking-[0.06em] text-stone"
+                >
+                  {{ t.step2.pickTitle }}
+                </p>
+                <div class="mt-3 grid sm:grid-cols-2 gap-3 max-w-3xl">
+                  <div
+                    v-for="o in t.step2.options"
+                    :key="o.title"
+                    class="rounded-xl border border-hairline-soft bg-white p-4"
+                  >
+                    <p
+                      class="font-medium text-[15px] flex items-center gap-2.5 mb-1.5"
+                    >
+                      <span
+                        class="w-8 h-8 rounded-lg bg-surface grid place-items-center text-slate"
+                        ><i class="fa-solid" :class="[o.icon, 'text-sm']"></i
+                      ></span>
+                      {{ o.title }}
+                    </p>
+                    <p
+                      class="text-[13px] leading-relaxed text-slate doc-body"
+                      v-html="o.desc"
+                    ></p>
+                  </div>
+                </div>
+
+                <!-- Terminal git clone -->
+                <div
+                  class="mt-3 rounded-xl bg-ink-deep text-on-dark overflow-hidden border border-primary max-w-3xl"
+                >
+                  <div
+                    class="flex items-center justify-between px-4 py-2 border-b border-white/10"
+                  >
+                    <span
+                      class="flex items-center gap-2 text-[12px] font-medium text-on-dark-muted"
+                      ><i class="fa-solid fa-terminal"></i> Terminal</span
+                    >
+                    <button
+                      @click="copyText('git clone https://github.com/Aaksaa/fintrack.git', 'git')"
+                      class="flex items-center gap-1.5 text-[12px] text-on-dark-muted hover:text-white transition-colors"
+                    >
+                      <i
+                        class="fa-solid"
+                        :class="copied === 'git' ? 'fa-check text-success' : 'fa-copy'"
+                      ></i>
+                      {{ copied === 'git' ? t.common.copied : t.common.copy }}
+                    </button>
+                  </div>
+                  <pre
+                    class="px-4 py-3.5 text-[13px] leading-relaxed font-mono overflow-x-auto thin-scroll"
+                  ><code><span class="text-stone select-none">$ </span>git clone https://github.com/Aaksaa/fintrack.git</code></pre>
+                </div>
+
+                <!-- Sub: pasang di Apps Script -->
+                <p
+                  class="mt-8 text-[13px] font-semibold uppercase tracking-[0.06em] text-stone"
+                >
+                  {{ t.step2.installTitle }}
+                </p>
+                <ol class="mt-3 space-y-3.5 max-w-3xl">
+                  <li
+                    v-for="(s, i) in t.steps[1].items"
+                    :key="i"
+                    class="flex gap-3"
+                  >
+                    <span
+                      class="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-surface border border-hairline grid place-items-center text-[12px] font-semibold text-steel"
+                      >{{ i + 1 }}</span
+                    >
+                    <p
+                      class="text-[15px] leading-relaxed doc-body"
+                      v-html="s"
+                    ></p>
+                  </li>
+                </ol>
+
+                <!-- Mockup: editor Apps Script -->
+                <figure
+                  class="mt-6 rounded-xl border border-hairline bg-white overflow-hidden max-w-3xl"
+                >
+                  <div
+                    class="flex items-center gap-1 px-3 pt-2 border-b border-hairline-soft bg-surface"
+                  >
+                    <span
+                      class="px-3.5 py-2 text-[12px] font-mono text-steel border-b-2 border-transparent"
+                      >backend.gs</span
+                    >
+                    <span
+                      class="px-3.5 py-2 text-[12px] font-mono font-semibold text-ink bg-white rounded-t-md border border-b-0 border-hairline -mb-px"
+                      >index.html</span
+                    >
+                    <span
+                      class="ml-auto text-[11px] text-stone pr-2 hidden sm:block"
+                      ><i class="fa-solid fa-floppy-disk mr-1"></i>{{
+                      t.mocks.saved }}</span
+                    >
+                  </div>
+                  <div
+                    class="grid grid-cols-[136px_1fr] sm:grid-cols-[176px_1fr] min-h-[168px]"
+                  >
+                    <div
+                      class="border-r border-hairline-soft bg-surface-soft p-3 text-[12px]"
+                    >
+                      <p
+                        class="flex items-center justify-between font-semibold text-stone mb-2.5 px-1"
+                      >
+                        Files <i class="fa-solid fa-plus text-[10px]"></i>
+                      </p>
+                      <ul class="space-y-1.5">
+                        <li
+                          class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-white border border-hairline text-ink font-medium"
+                        >
+                          <i
+                            class="fa-solid fa-file-code text-steel text-[11px]"
+                          ></i>
+                          backend.gs
+                        </li>
+                        <li
+                          class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-surface-yellow border border-brand-deep/40 text-ink font-medium"
+                        >
+                          <i
+                            class="fa-solid fa-file-code text-yellow-dark text-[11px]"
+                          ></i>
+                          index.html
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="p-4 space-y-2.5">
+                      <div class="h-2 w-2/5 rounded bg-teal-light"></div>
+                      <div class="h-2 w-4/5 rounded bg-hairline-soft"></div>
+                      <div
+                        class="h-2 w-3/5 rounded bg-hairline-soft ml-4"
+                      ></div>
+                      <div
+                        class="h-2 w-2/3 rounded bg-hairline-soft ml-4"
+                      ></div>
+                      <div class="h-2 w-1/2 rounded bg-hairline-soft"></div>
+                      <div
+                        class="h-2 w-3/4 rounded bg-hairline-soft ml-4"
+                      ></div>
+                    </div>
+                  </div>
+                  <figcaption
+                    class="px-4 py-3 border-t border-hairline-soft flex items-start gap-2 text-[13px] leading-relaxed text-slate"
+                  >
+                    <i
+                      class="fa-solid fa-circle-info text-stone mt-0.5 shrink-0"
+                    ></i>
+                    {{ t.mocks.m2 }}
+                  </figcaption>
+                </figure>
+              </section>
+
+              <!-- ════════ 05 · LANGKAH 3 — SPREADSHEET_ID ════════ -->
+              <section id="step-3" class="scroll-mt-28">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="w-10 h-10 shrink-0 rounded-full bg-brand text-primary grid place-items-center font-semibold text-[15px]"
+                    >3</span
+                  >
+                  <div class="min-w-0">
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-1"
+                    >
+                      {{ t.steps[2].kicker }}
+                    </p>
+                    <h3
+                      class="text-[22px] lg:text-[26px] font-medium leading-snug tracking-[-0.01em]"
+                    >
+                      {{ t.steps[2].title }}
+                    </h3>
+                    <p
+                      class="mt-2 text-[15px] leading-relaxed text-slate doc-body"
+                      v-html="t.steps[2].lead"
+                    ></p>
+                  </div>
+                </div>
+                <ol class="mt-6 space-y-3.5 max-w-3xl">
+                  <li
+                    v-for="(s, i) in t.steps[2].items"
+                    :key="i"
+                    class="flex gap-3"
+                  >
+                    <span
+                      class="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-surface border border-hairline grid place-items-center text-[12px] font-semibold text-steel"
+                      >{{ i + 1 }}</span
+                    >
+                    <p
+                      class="text-[15px] leading-relaxed doc-body"
+                      v-html="s"
+                    ></p>
+                  </li>
+                </ol>
+
+                <!-- Mockup: Script Properties -->
+                <figure
+                  class="mt-6 rounded-xl border border-hairline bg-white overflow-hidden max-w-xl"
+                >
+                  <div
+                    class="px-4 py-3 border-b border-hairline-soft flex items-center gap-2 text-sm"
+                  >
+                    <i class="fa-solid fa-gear text-steel text-xs"></i>
+                    <span class="font-medium">Project Settings</span>
+                    <i
+                      class="fa-solid fa-chevron-right text-[9px] text-stone"
+                    ></i>
+                    <span class="font-medium">Script Properties</span>
+                  </div>
+                  <div class="p-4 sm:p-5 space-y-4">
+                    <div>
+                      <p class="text-[12px] font-semibold text-stone mb-1.5">
+                        Property
+                      </p>
+                      <div
+                        class="h-11 rounded-md border border-hairline-strong px-3 flex items-center font-mono text-[13px] bg-white"
+                      >
+                        SPREADSHEET_ID
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-semibold text-stone mb-1.5">
+                        Value
+                      </p>
+                      <div
+                        class="h-11 rounded-md border-2 border-blue px-3 flex items-center font-mono text-[13px] bg-white"
+                      >
+                        1BxiMVs0XRA5nFMdKvBd…<span
+                          class="w-px h-4 bg-blue ml-0.5 animate-pulse"
+                        ></span>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                      <span
+                        class="inline-flex items-center gap-1.5 text-[13px] font-medium rounded-full border border-hairline-strong px-4 py-2 text-ink"
+                        ><i class="fa-solid fa-plus text-[10px]"></i> Add script
+                        property</span
+                      >
+                      <span
+                        class="inline-flex items-center text-[13px] font-medium rounded-full bg-primary text-white px-4 py-2"
+                        >Save script properties</span
+                      >
+                    </div>
+                  </div>
+                  <figcaption
+                    class="px-4 py-3 border-t border-hairline-soft flex items-start gap-2 text-[13px] leading-relaxed text-slate"
+                  >
+                    <i
+                      class="fa-solid fa-circle-info text-stone mt-0.5 shrink-0"
+                    ></i>
+                    {{ t.mocks.m3 }}
+                  </figcaption>
+                </figure>
+
+                <!-- Callout: catatan fallback -->
+                <div
+                  class="mt-5 rounded-xl bg-surface-yellow p-4 flex gap-3 max-w-3xl"
+                >
+                  <i
+                    class="fa-solid fa-circle-info text-yellow-dark mt-0.5 shrink-0"
+                  ></i>
+                  <div>
+                    <p
+                      class="text-[13px] font-semibold text-yellow-dark mb-0.5"
+                    >
+                      {{ t.common.note }}
+                    </p>
+                    <p
+                      class="text-sm leading-relaxed text-ink/90 doc-body"
+                      v-html="t.steps[2].note"
+                    ></p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ════════ 06 · LANGKAH 4 — DEPLOY ════════ -->
+              <section id="step-4" class="scroll-mt-28">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="w-10 h-10 shrink-0 rounded-full bg-brand text-primary grid place-items-center font-semibold text-[15px]"
+                    >4</span
+                  >
+                  <div class="min-w-0">
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-1"
+                    >
+                      {{ t.steps[3].kicker }}
+                    </p>
+                    <h3
+                      class="text-[22px] lg:text-[26px] font-medium leading-snug tracking-[-0.01em]"
+                    >
+                      {{ t.steps[3].title }}
+                    </h3>
+                    <p
+                      class="mt-2 text-[15px] leading-relaxed text-slate doc-body"
+                      v-html="t.steps[3].lead"
+                    ></p>
+                  </div>
+                </div>
+                <ol class="mt-6 space-y-3.5 max-w-3xl">
+                  <li
+                    v-for="(s, i) in t.steps[3].items"
+                    :key="i"
+                    class="flex gap-3"
+                  >
+                    <span
+                      class="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-surface border border-hairline grid place-items-center text-[12px] font-semibold text-steel"
+                      >{{ i + 1 }}</span
+                    >
+                    <p
+                      class="text-[15px] leading-relaxed doc-body"
+                      v-html="s"
+                    ></p>
+                  </li>
+                </ol>
+
+                <!-- Mockup: dialog deployment -->
+                <figure
+                  class="mt-6 rounded-xl border border-hairline bg-white overflow-hidden max-w-xl"
+                >
+                  <div
+                    class="px-5 py-3.5 border-b border-hairline-soft flex items-center justify-between gap-3"
+                  >
+                    <span class="font-medium text-[15px]">New deployment</span>
+                    <span
+                      class="flex items-center gap-1.5 text-[12px] font-medium text-steel border border-hairline rounded-full px-2.5 py-1"
+                      ><i class="fa-solid fa-gear text-[10px]"></i> Web
+                      app</span
+                    >
+                  </div>
+                  <div class="p-5 space-y-4">
+                    <div>
+                      <p class="text-[12px] font-semibold text-stone mb-1.5">
+                        Description
+                      </p>
+                      <div
+                        class="h-11 rounded-md border border-hairline-strong px-3 flex items-center text-[13px] bg-white"
+                      >
+                        Fintrack Deployment v1.0
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-semibold text-stone mb-1.5">
+                        Execute as
+                      </p>
+                      <div
+                        class="h-11 rounded-md border border-hairline-strong px-3 flex items-center justify-between text-[13px] bg-white"
+                      >
+                        Me (anda@gmail.com)
+                        <i
+                          class="fa-solid fa-chevron-down text-[10px] text-stone"
+                        ></i>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex items-center justify-between mb-1.5">
+                        <p class="text-[12px] font-semibold text-stone">
+                          Who has access
+                        </p>
+                        <span
+                          class="bg-surface-yellow text-yellow-dark text-[11px] font-semibold rounded-full px-2 py-0.5"
+                          >{{ t.common.required }}</span
+                        >
+                      </div>
+                      <div
+                        class="h-11 rounded-md border-2 border-blue px-3 flex items-center justify-between text-[13px] font-medium bg-white"
+                      >
+                        Anyone
+                        <i
+                          class="fa-solid fa-chevron-down text-[10px] text-stone"
+                        ></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1">
+                      <span
+                        class="text-[13px] font-medium rounded-full border border-hairline-strong px-4 py-2 text-ink"
+                        >Cancel</span
+                      >
+                      <span
+                        class="text-[13px] font-medium rounded-full bg-primary text-white px-5 py-2"
+                        >Deploy</span
+                      >
+                    </div>
+                  </div>
+                  <figcaption
+                    class="px-4 py-3 border-t border-hairline-soft flex items-start gap-2 text-[13px] leading-relaxed text-slate"
+                  >
+                    <i
+                      class="fa-solid fa-circle-info text-stone mt-0.5 shrink-0"
+                    ></i>
+                    {{ t.mocks.m4 }}
+                  </figcaption>
+                </figure>
+
+                <!-- Callout: peringatan unsafe -->
+                <div
+                  class="mt-5 rounded-xl bg-coral-light/45 p-4 flex gap-3 max-w-3xl"
+                >
+                  <i
+                    class="fa-solid fa-triangle-exclamation text-coral-dark mt-0.5 shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[13px] font-semibold text-coral-dark mb-0.5">
+                      {{ t.common.warning }}
+                    </p>
+                    <p
+                      class="text-sm leading-relaxed text-ink/90 doc-body"
+                      v-html="t.steps[3].note"
+                    ></p>
+                  </div>
+                </div>
+
+                <!-- Hasil: exec URL -->
+                <div class="mt-5 max-w-3xl">
+                  <p
+                    class="text-[13px] font-semibold text-stone mb-2 flex items-center gap-2"
+                  >
+                    <i class="fa-solid fa-link text-[11px]"></i> {{ t.exec.label
+                    }}
+                  </p>
+                  <div
+                    class="rounded-xl bg-ink-deep text-on-dark overflow-hidden border border-primary"
+                  >
+                    <div
+                      class="flex items-center justify-between px-4 py-2 border-b border-white/10"
+                    >
+                      <span
+                        class="flex items-center gap-2 text-[12px] font-medium text-on-dark-muted"
+                        ><i class="fa-solid fa-globe"></i> Web app URL</span
+                      >
+                      <button
+                        @click="copyText('https://script.google.com/macros/s/AKfycb.../exec', 'exec')"
+                        class="flex items-center gap-1.5 text-[12px] text-on-dark-muted hover:text-white transition-colors"
+                      >
+                        <i
+                          class="fa-solid"
+                          :class="copied === 'exec' ? 'fa-check text-success' : 'fa-copy'"
+                        ></i>
+                        {{ copied === 'exec' ? t.common.copied : t.common.copy
+                        }}
+                      </button>
+                    </div>
+                    <pre
+                      class="px-4 py-3.5 text-[13px] leading-relaxed font-mono overflow-x-auto thin-scroll"
+                    ><code>https://script.google.com/macros/s/<span class="text-brand">AKfycbx…</span>/exec</code></pre>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ════════ 07 · LANGKAH 5 — SEED DATA ════════ -->
+              <section id="step-5" class="scroll-mt-28">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="w-10 h-10 shrink-0 rounded-full bg-brand text-primary grid place-items-center font-semibold text-[15px]"
+                    >5</span
+                  >
+                  <div class="min-w-0">
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.08em] text-stone mb-1"
+                    >
+                      {{ t.steps[4].kicker }}
+                    </p>
+                    <h3
+                      class="text-[22px] lg:text-[26px] font-medium leading-snug tracking-[-0.01em]"
+                    >
+                      {{ t.steps[4].title }}
+                    </h3>
+                    <p
+                      class="mt-2 text-[15px] leading-relaxed text-slate doc-body"
+                      v-html="t.steps[4].lead"
+                    ></p>
+                  </div>
+                </div>
+                <ol class="mt-6 space-y-3.5 max-w-3xl">
+                  <li
+                    v-for="(s, i) in t.steps[4].items"
+                    :key="i"
+                    class="flex gap-3"
+                  >
+                    <span
+                      class="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-surface border border-hairline grid place-items-center text-[12px] font-semibold text-steel"
+                      >{{ i + 1 }}</span
+                    >
+                    <p
+                      class="text-[15px] leading-relaxed doc-body"
+                      v-html="s"
+                    ></p>
+                  </li>
+                </ol>
+
+                <!-- Mockup: tab sheet hasil seed -->
+                <figure
+                  class="mt-6 rounded-xl border border-hairline bg-white overflow-hidden max-w-3xl"
+                >
+                  <div class="p-4 pb-3">
+                    <div
+                      class="grid grid-cols-5 gap-px bg-hairline-soft border border-hairline-soft rounded-md overflow-hidden"
+                    >
+                      <div
+                        v-for="n in 15"
+                        :key="n"
+                        class="h-6 bg-white"
+                        :class="n <= 5 && 'bg-surface-soft'"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="px-4 pb-4 pt-1 flex flex-wrap gap-1.5 border-t border-hairline-soft bg-surface"
+                  >
+                    <span
+                      class="px-2.5 py-1.5 text-[12px] text-stone border border-transparent rounded-md"
+                      ><i class="fa-solid fa-plus text-[10px]"></i
+                    ></span>
+                    <span
+                      class="px-3 py-1.5 text-[12px] font-semibold text-ink bg-white border border-hairline border-b-2 border-b-success rounded-md shadow-card"
+                      >Januari 2026</span
+                    >
+                    <span
+                      class="px-3 py-1.5 text-[12px] text-slate bg-white border border-hairline rounded-md"
+                      >Februari 2026</span
+                    >
+                    <span
+                      class="px-3 py-1.5 text-[12px] text-slate bg-white border border-hairline rounded-md"
+                      >MASTER_REKAP</span
+                    >
+                    <span
+                      class="px-3 py-1.5 text-[12px] text-stone bg-white border border-hairline rounded-md"
+                      >TRASH</span
+                    >
+                  </div>
+                  <figcaption
+                    class="px-4 py-3 border-t border-hairline-soft flex flex-wrap items-center gap-2 text-[13px] leading-relaxed text-slate"
+                  >
+                    <span
+                      class="bg-success text-white text-[12px] font-semibold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1.5"
+                      ><i class="fa-solid fa-check text-[10px]"></i> {{
+                      t.common.success }}</span
+                    >
+                    {{ t.mocks.m5 }}
+                  </figcaption>
+                </figure>
+              </section>
+
+              <!-- ════════ 08 · FITUR KUNCI ════════ -->
+              <section id="features" class="scroll-mt-28">
+                <div class="flex items-center gap-3 mb-2">
+                  <span
+                    class="w-9 h-9 rounded-lg bg-surface border border-hairline grid place-items-center text-slate"
+                    ><i class="fa-solid fa-wand-magic-sparkles text-sm"></i
+                  ></span>
+                  <h2
+                    class="text-[24px] lg:text-[28px] font-medium leading-tight tracking-[-0.01em]"
+                  >
+                    {{ t.features.title }}
+                  </h2>
+                </div>
+                <p class="text-[15px] text-slate mb-6 max-w-2xl">
+                  {{ t.features.sub }}
+                </p>
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div
+                    v-for="f in t.features.items"
+                    :key="f.title"
+                    class="rounded-2xl border border-hairline-soft bg-white p-6 transition-shadow hover:shadow-card"
+                  >
+                    <span
+                      class="w-10 h-10 rounded-lg grid place-items-center mb-4"
+                      :class="f.tint"
+                      ><i class="fa-solid" :class="[f.icon, 'text-[15px]']"></i
+                    ></span>
+                    <h3 class="font-medium text-[17px] mb-1.5">
+                      {{ f.title }}
+                    </h3>
+                    <p class="text-sm leading-relaxed text-slate">
+                      {{ f.desc }}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ════════ 09 · FAQ ════════ -->
+              <section id="faq" class="scroll-mt-28">
+                <div class="flex items-center gap-3 mb-2">
+                  <span
+                    class="w-9 h-9 rounded-lg bg-surface border border-hairline grid place-items-center text-slate"
+                    ><i class="fa-solid fa-circle-question text-sm"></i
+                  ></span>
+                  <h2
+                    class="text-[24px] lg:text-[28px] font-medium leading-tight tracking-[-0.01em]"
+                  >
+                    {{ t.faq.title }}
+                  </h2>
+                </div>
+                <p class="text-[15px] text-slate mb-6 max-w-2xl">
+                  {{ t.faq.sub }}
+                </p>
+                <div
+                  class="rounded-2xl border border-hairline-soft bg-white overflow-hidden divide-y divide-hairline-soft"
+                >
+                  <div v-for="(f, i) in t.faq.items" :key="i">
+                    <button
+                      @click="openFaq = openFaq === i ? -1 : i"
+                      class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left group"
+                    >
+                      <span
+                        class="font-medium text-[15px] lg:text-[17px] leading-snug group-hover:text-ink transition-colors"
+                        :class="openFaq === i ? 'text-ink' : 'text-ink/90'"
+                        >{{ f.q }}</span
+                      >
+                      <i
+                        class="fa-solid fa-chevron-down text-stone text-xs shrink-0 transition-transform duration-300"
+                        :class="openFaq === i && 'rotate-180'"
+                      ></i>
+                    </button>
+                    <div
+                      class="grid transition-[grid-template-rows] duration-300 ease-out"
+                      :style="{ gridTemplateRows: openFaq === i ? '1fr' : '0fr' }"
+                    >
+                      <div class="overflow-hidden">
+                        <p
+                          class="px-5 pb-5 text-sm lg:text-[15px] leading-relaxed text-slate max-w-3xl doc-body"
+                          v-html="f.a"
+                        ></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ══════════════ FOOTER ══════════════ -->
+      <footer class="bg-footer text-on-dark mt-8">
+        <div class="max-w-page mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+          <div class="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+            <div>
+              <div class="flex items-center gap-2.5 mb-3">
+                <img
+                  src="assets/fintrack-logo.webp"
+                  alt="Fintrack"
+                  class="w-8 h-8 rounded-lg object-cover"
+                />
+                <span class="font-medium text-lg">Fintrack</span>
+                <span
+                  class="bg-brand text-primary text-[11px] font-semibold rounded-full px-2 py-0.5"
+                  >Docs</span
+                >
+              </div>
+              <p class="text-sm leading-relaxed text-on-dark-muted max-w-xs">
+                {{ t.footer.tag }}
+              </p>
+            </div>
+            <div v-for="col in t.footer.cols" :key="col.title">
+              <p class="text-sm font-medium text-on-dark mb-3">
+                {{ col.title }}
+              </p>
+              <ul class="space-y-1">
+                <li v-for="l in col.links" :key="l.label">
+                  <a
+                    :href="l.href"
+                    :target="l.ext ? '_blank' : '_self'"
+                    rel="noopener"
+                    class="inline-flex items-center gap-1.5 text-sm text-on-dark-muted hover:text-white transition-colors py-0.5"
+                  >
+                    {{ l.label }}
+                    <i
+                      v-if="l.ext"
+                      class="fa-solid fa-arrow-up-right-from-square text-[9px]"
+                    ></i>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] text-on-dark-muted"
+          >
+            <p>{{ t.footer.rights }}</p>
+            <!-- <p class="flex items-center gap-2">
+              <i class="fa-brands fa-google text-[12px]"></i> {{ t.footer.made
+              }}
+            </p> -->
+          </div>
+        </div>
+      </footer>
+
+      <!-- Back to top -->
+      <button
+        v-show="showTop"
+        @click="scrollTop"
+        :aria-label="t.common.backTop"
+        class="fixed bottom-5 right-5 z-50 w-11 h-11 rounded-full bg-primary text-white grid place-items-center shadow-card active:bg-charcoal transition-all hover:-translate-y-0.5"
+      >
+        <i class="fa-solid fa-arrow-up text-sm"></i>
+      </button>
+    </div>
+
+    <script>
+      /* ═══════════════════════ KONTEN DWIBAHASA ═══════════════════════ */
+      const REPO = "https://github.com/Aaksaa/fintrack";
+      const SHEETS = "https://sheets.google.com";
+
+      const I18N = {
+        /* ─────────────── BAHASA INDONESIA ─────────────── */
+        id: {
+          docTitle: "Panduan Setup & Deployment — Fintrack Docs",
+          nav: {
+            docsBadge: "Dokumentasi",
+            home: "Beranda",
+            repo: "Repositori",
+            links: [
+              { label: "Panduan", href: "#intro" },
+              { label: "Fitur", href: "#features" },
+              { label: "FAQ", href: "#faq" },
+            ],
+          },
+          promo: {
+            tag: "Baru",
+            text: "Fintrack v1.0 telah dirilis — panduan setup terbaru tersedia di halaman ini.",
+            cta: "Baca panduan",
+            dismiss: "Tutup",
+          },
+          crumbHome: "Beranda",
+          crumbDocs: "Dokumentasi",
+          hero: {
+            badge: "Panduan Resmi",
+            title: "Panduan Setup & Deployment Fintrack",
+            subtitle:
+              "Cara memasang dan menjalankan aplikasi pencatatan keuangan Fintrack menggunakan Google Apps Script — dari spreadsheet kosong hingga web app siap pakai dalam ±10 menit.",
+            meta: [
+              { icon: "fa-regular fa-clock", text: "±10 menit setup" },
+              { icon: "fa-solid fa-list-check", text: "5 langkah" },
+              {
+                icon: "fa-solid fa-circle-check",
+                text: "Gratis & open-source",
+              },
+            ],
+            tocTitle: "Daftar isi",
+            tocOpen: "Lihat daftar isi",
+          },
+          toc: [
+            { id: "intro", label: "Pendahuluan" },
+            { id: "prerequisites", label: "Prasyarat" },
+            { id: "step-1", label: "Langkah 1 · Google Sheets" },
+            { id: "step-2", label: "Langkah 2 · Pasang Kode" },
+            { id: "step-3", label: "Langkah 3 · SPREADSHEET_ID" },
+            { id: "step-4", label: "Langkah 4 · Deploy Web App" },
+            { id: "step-5", label: "Langkah 5 · Seed Data" },
+            { id: "features", label: "Fitur Kunci" },
+            { id: "faq", label: "FAQ & Troubleshooting" },
+          ],
+          common: {
+            note: "Catatan",
+            warning: "Penting",
+            success: "Berhasil",
+            copy: "Salin",
+            copied: "Tersalin!",
+            required: "Wajib",
+            backTop: "Kembali ke atas",
+          },
+          intro: {
+            title: "Pendahuluan",
+            body: "Fintrack adalah aplikasi pencatatan keuangan pribadi yang berjalan sepenuhnya di ekosistem Google — Google Apps Script sebagai backend dan Google Sheets sebagai database. Tidak ada server yang perlu Anda kelola dan tidak ada yang perlu diinstal: cukup deploy sekali sebagai web app, lalu akses dari browser mana pun. Karena database-nya adalah spreadsheet Anda sendiri, data tetap menjadi milik Anda, tersimpan aman di Google Drive.",
+            tips: [
+              "Tanpa instalasi server — semua berjalan di infrastruktur Google",
+              "Bisa dibuka dari perangkat apa pun dengan browser modern",
+              "Mulai dari spreadsheet kosong pun bisa",
+            ],
+            note: "Sebelum memulai, pastikan Anda sudah memiliki akun Google dan akses ke repositori GitHub Fintrack. Seluruh proses memakan waktu sekitar <b>10 menit</b>.",
+          },
+          prereq: {
+            title: "Prasyarat",
+            items: [
+              {
+                icon: "fa-solid fa-user",
+                title: "Akun Google",
+                desc: "Diperlukan untuk membuat spreadsheet dan menjalankan Apps Script.",
+              },
+              {
+                icon: "fa-solid fa-table",
+                title: "Akses Google Sheets",
+                desc:
+                  'Buka <a class="inline" href="' +
+                  SHEETS +
+                  '" target="_blank" rel="noopener">sheets.google.com</a> dan pastikan Anda bisa membuat spreadsheet baru.',
+              },
+              {
+                icon: "fa-brands fa-github",
+                title: "Repositori GitHub Fintrack",
+                desc: "Kode sumber aplikasi yang akan diunduh atau di-clone.",
+                link: { href: REPO, label: "Buka repositori" },
+              },
+              {
+                icon: "fa-solid fa-globe",
+                title: "Browser modern",
+                desc: "Chrome, Firefox, Edge, atau Safari — dengan akses ke Apps Script.",
+              },
+            ],
+          },
+          steps: [
+            {
+              /* 1 */ kicker: "Langkah 1 dari 5",
+              title: "Siapkan Google Sheets (Database)",
+              lead: "Spreadsheet inilah yang akan menjadi database seluruh transaksi Fintrack Anda.",
+              items: [
+                'Buka <a class="inline" href="' +
+                  SHEETS +
+                  '" target="_blank" rel="noopener">Google Sheets</a> dan buat sebuah Spreadsheet baru.',
+                "Beri nama spreadsheet Anda, misalnya: <code>Database Fintrack</code>.",
+                "Salin <b>Spreadsheet ID</b> dari URL browser Anda (lihat gambar di bawah).",
+              ],
+            },
+            {
+              /* 2 */ kicker: "Langkah 2 dari 5",
+              title: "Ambil Kode dari GitHub & Pasang di Apps Script",
+              lead: "Seluruh aplikasi Fintrack terdiri dari dua file: <code>backend.gs</code> dan <code>index.html</code>.",
+              items: [
+                "Pada Google Spreadsheet yang telah Anda buat, klik menu <code>Extensions → Apps Script</code> di bagian atas menu bar.",
+                "Anda akan diarahkan ke editor Google Apps Script.",
+                "Hapus semua file bawaan (jika ada), atau edit isi file default <code>backend.gs</code>.",
+                "Salin isi kode dari file <code>backend.gs</code> (hasil download/clone) ke file <code>backend.gs</code> di editor.",
+                'Buat file HTML baru: klik ikon <code>+</code> di sebelah tulisan "Files", pilih <b>HTML</b>, lalu beri nama <code>Index</code> (Apps Script otomatis membuat file <code>index.html</code>). Salin isi file <code>index.html</code> ke dalamnya.',
+                "Simpan projek dengan tombol save (ikon disket) atau <kbd>Ctrl</kbd> + <kbd>S</kbd>.",
+              ],
+            },
+            {
+              /* 3 */ kicker: "Langkah 3 dari 5",
+              title: "Konfigurasi SPREADSHEET_ID",
+              lead: "Agar aplikasi terhubung ke Google Sheet yang spesifik, daftarkan ID spreadsheet melalui <b>Script Properties</b>.",
+              items: [
+                "Di bilah kiri Apps Script Editor, klik ikon gigi roda <b>Project Settings</b>.",
+                "Gulir ke bawah hingga bagian <b>Script Properties</b>.",
+                "Klik tombol <b>Add script property</b>.",
+                "Masukkan nama Property: <code>SPREADSHEET_ID</code>.",
+                "Masukkan Value: ID Spreadsheet yang telah Anda salin di Langkah 1.",
+                "Klik <b>Save script properties</b>.",
+              ],
+              note: "Jika properti ini tidak diatur, Apps Script secara otomatis akan mencoba menggunakan Spreadsheet yang terikat langsung (<i>active spreadsheet</i>). Tetap disarankan mengisinya eksplisit agar tujuan data pasti.",
+            },
+            {
+              /* 4 */ kicker: "Langkah 4 dari 5",
+              title: "Deploy sebagai Web App",
+              lead: "Langkah ini menerbitkan aplikasi Anda menjadi URL web yang bisa diakses siapa saja.",
+              items: [
+                "Klik tombol <b>Deploy</b> di kanan atas editor, lalu pilih <b>New deployment</b>.",
+                'Klik ikon gigi roda (<i>Select type</i>) di samping "Configuration", lalu pilih <b>Web app</b>.',
+                "Isi kolom konfigurasi sesuai gambar di bawah.",
+                "Klik tombol <b>Deploy</b>.",
+                "Google akan meminta otorisasi: klik <b>Authorize Access</b>, pilih akun Anda, klik <b>Advanced</b> di bagian bawah, pilih <b>Go to Fintrack (unsafe)</b>, lalu klik <b>Allow</b>.",
+                "Setelah deployment sukses, salin <b>Web app URL</b> yang muncul. URL inilah link aplikasi Fintrack Anda!",
+              ],
+              note: "Label <code>(unsafe)</code> muncul karena aplikasi Anda belum melalui proses verifikasi Google. Ini <b>normal dan aman</b> selama Anda mengotorisasi aplikasi yang Anda deploy sendiri.",
+            },
+            {
+              /* 5 */ kicker: "Langkah 5 dari 5",
+              title: "Isi Data Contoh (Seed Data)",
+              lead: "Aplikasi akan kosong di awal. Jalankan seed sekali agar grafik dan rekap bulanan langsung terlihat.",
+              items: [
+                "Kembali ke editor Apps Script.",
+                'Pada dropdown fungsi di baris atas (di sebelah kanan tombol "Debug"), pilih fungsi <code>seedInitialData</code>.',
+                "Klik tombol <b>Run</b> (ikon segitiga/play).",
+                "Setelah eksekusi sukses, periksa spreadsheet Anda: muncul dua sheet baru <b>Januari 2026</b> dan <b>Februari 2026</b> berisi data transaksi, beserta sheet <b>MASTER_REKAP</b> berisi rekapitulasi dan budget bulanan.",
+                "Buka (atau muat ulang) Web app URL Anda — rencana keuangan, ringkasan kartu, dan grafik tren pengeluaran 6 bulan terakhir akan terisi secara dinamis.",
+              ],
+            },
+          ],
+          step2: {
+            pickTitle: "Ambil kode — pilih salah satu",
+            installTitle: "Pasang di Apps Script",
+            options: [
+              {
+                icon: "fa-solid fa-file-zipper",
+                title: "Download ZIP",
+                desc: "Di halaman repositori, klik tombol <code>Code → Download ZIP</code>, lalu ekstrak ke folder lokal.",
+              },
+              {
+                icon: "fa-solid fa-terminal",
+                title: "Git Clone",
+                desc: "Jalankan perintah di samping pada Terminal Anda. Hasil clone berisi file <code>backend.gs</code> dan <code>index.html</code>.",
+              },
+            ],
+          },
+          mocks: {
+            m1: "Salin bagian yang disorot — string acak panjang berisi huruf dan angka. Simpan ID ini untuk Langkah 3.",
+            m2: "Struktur akhir projek di Apps Script: cukup dua file ini saja.",
+            m3: "Properti SPREADSHEET_ID menghubungkan aplikasi ke database Anda.",
+            m4: '"Who has access" wajib diisi Anyone agar backend dapat berinteraksi lancar.',
+            m5: "Tampilan spreadsheet setelah seedInitialData berhasil dijalankan.",
+            saved: "Tersimpan",
+          },
+          exec: { label: "Format URL yang akan Anda terima:" },
+          features: {
+            title: "Fitur Kunci",
+            sub: "Yang Anda dapatkan setelah setup selesai.",
+            items: [
+              {
+                icon: "fa-solid fa-calendar-plus",
+                tint: "bg-teal-light text-moss-dark",
+                title: "Auto-create Sheet",
+                desc: "Menambah transaksi di bulan baru (misal Maret 2026)? Sistem otomatis membuat sheet baru, menyusun header, dan menyiapkan formula total di bagian bawah.",
+              },
+              {
+                icon: "fa-solid fa-wallet",
+                tint: "bg-surface-yellow text-yellow-dark",
+                title: "Budgeting",
+                desc: 'Klik tombol (Ubah) pada card "Target Budget" untuk mengatur target pengeluaran bulan terpilih. Jika pengeluaran melebihi limit, badge rekap dan indikator otomatis berubah merah.',
+              },
+              {
+                icon: "fa-solid fa-trash-can",
+                tint: "bg-coral-light/60 text-coral-dark",
+                title: "Trash Bin (Soft Delete)",
+                desc: "Menghapus data tidak membuangnya selamanya — data dipindahkan ke sheet TRASH dan bisa dipulihkan kembali lewat tombol Sampah di UI utama.",
+              },
+              {
+                icon: "fa-solid fa-file-export",
+                tint: "bg-rose-light text-primary",
+                title: "Ekspor CSV & Google Sheet",
+                desc: "Unduh laporan berformat CSV secara lokal, atau langsung lompat ke tab sheet spesifik melalui link ekspor.",
+              },
+            ],
+          },
+          faq: {
+            title: "FAQ & Troubleshooting",
+            sub: "Pertanyaan yang paling sering muncul saat setup.",
+            items: [
+              {
+                q: 'Mengapa "Who has access" harus diisi "Anyone"?',
+                a: "Agar aplikasi web bisa diakses dan berinteraksi lancar dengan backend. Jika dibatasi ke akun tertentu, request dari frontend dapat terblokir atau memicu error otorisasi.",
+              },
+              {
+                q: 'Apakah peringatan "Go to Fintrack (unsafe)" saat otorisasi aman?',
+                a: "Aman, selama itu aplikasi yang Anda deploy sendiri. Label tersebut muncul karena aplikasi belum diverifikasi Google — bukan karena berbahaya.",
+              },
+              {
+                q: "Apa yang terjadi jika SPREADSHEET_ID tidak diisi?",
+                a: "Apps Script akan fallback menggunakan spreadsheet yang terikat langsung (active spreadsheet). Namun sebaiknya tetap diisi eksplisit agar data selalu masuk ke spreadsheet yang benar.",
+              },
+              {
+                q: "Bagaimana cara memperbarui aplikasi setelah kode diedit?",
+                a: 'Buka Deploy → Manage deployments → ikon pensil (Edit), ubah Version menjadi "New version", lalu klik Deploy. URL <code>/exec</code> Anda tetap sama.',
+              },
+              {
+                q: "Bagaimana jika saya menambah transaksi di bulan yang belum ada sheet-nya?",
+                a: "Tidak perlu membuat sheet manual — fitur Auto-create Sheet akan membuatkan sheet bulan tersebut lengkap dengan header dan formula total.",
+              },
+              {
+                q: "Di mana data saya disimpan?",
+                a: "Seluruh data tersimpan di Google Sheets pada Google Drive Anda sendiri. Anda memegang kendali penuh atas data tersebut.",
+              },
+            ],
+          },
+          footer: {
+            tag: "Dokumentasi resmi Fintrack — aplikasi pencatatan keuangan pribadi berbasis Google Apps Script + Google Sheets.",
+            cols: [
+              {
+                title: "Navigasi",
+                links: [
+                  { label: "Pendahuluan", href: "#intro" },
+                  { label: "Prasyarat", href: "#prerequisites" },
+                  { label: "Fitur Kunci", href: "#features" },
+                  { label: "FAQ", href: "#faq" },
+                ],
+              },
+              {
+                title: "Proyek",
+                links: [
+                  { label: "Beranda", href: "./index.html" },
+                  { label: "Repositori GitHub", href: REPO, ext: true },
+                  { label: "Kontak", href: "mailto:rifqiadyasta2@gmail.com" },
+                ],
+              },
+            ],
+            rights: "© 2026 Fintrack. Hak cipta dilindungi.",
+            made: "Dibuat dengan Google Apps Script + Google Sheets",
+          },
+        },
+
+        /* ─────────────── ENGLISH ─────────────── */
+        en: {
+          docTitle: "Setup & Deployment Guide — Fintrack Docs",
+          nav: {
+            docsBadge: "Docs",
+            home: "Home",
+            repo: "Repository",
+            links: [
+              { label: "Guide", href: "#intro" },
+              { label: "Features", href: "#features" },
+              { label: "FAQ", href: "#faq" },
+            ],
+          },
+          promo: {
+            tag: "New",
+            text: "Fintrack v1.0 is out — the latest setup guide is available on this page.",
+            cta: "Read the guide",
+            dismiss: "Dismiss",
+          },
+          crumbHome: "Home",
+          crumbDocs: "Documentation",
+          hero: {
+            badge: "Official Guide",
+            title: "Fintrack Setup & Deployment Guide",
+            subtitle:
+              "Install and run the Fintrack finance tracker with Google Apps Script — from an empty spreadsheet to a working web app in about 10 minutes.",
+            meta: [
+              { icon: "fa-regular fa-clock", text: "±10 min setup" },
+              { icon: "fa-solid fa-list-check", text: "5 steps" },
+              { icon: "fa-solid fa-circle-check", text: "Free & open-source" },
+            ],
+            tocTitle: "Table of contents",
+            tocOpen: "Show table of contents",
+          },
+          toc: [
+            { id: "intro", label: "Introduction" },
+            { id: "prerequisites", label: "Prerequisites" },
+            { id: "step-1", label: "Step 1 · Google Sheets" },
+            { id: "step-2", label: "Step 2 · Install the Code" },
+            { id: "step-3", label: "Step 3 · SPREADSHEET_ID" },
+            { id: "step-4", label: "Step 4 · Deploy Web App" },
+            { id: "step-5", label: "Step 5 · Seed Data" },
+            { id: "features", label: "Key Features" },
+            { id: "faq", label: "FAQ & Troubleshooting" },
+          ],
+          common: {
+            note: "Note",
+            warning: "Important",
+            success: "Done",
+            copy: "Copy",
+            copied: "Copied!",
+            required: "Required",
+            backTop: "Back to top",
+          },
+          intro: {
+            title: "Introduction",
+            body: "Fintrack is a personal finance tracker that runs entirely on the Google ecosystem — Google Apps Script as the backend, Google Sheets as the database. There are no servers to maintain and nothing to install: deploy it once as a web app, then open it from any browser. Because the database is your own spreadsheet, your data stays yours, stored safely in your Google Drive.",
+            tips: [
+              "No server installation — everything runs on Google infrastructure",
+              "Works on any device with a modern browser",
+              "You can start from a completely empty spreadsheet",
+            ],
+            note: "Before you start, make sure you have a Google account and access to the Fintrack GitHub repository. The whole process takes about <b>10 minutes</b>.",
+          },
+          prereq: {
+            title: "Prerequisites",
+            items: [
+              {
+                icon: "fa-solid fa-user",
+                title: "A Google account",
+                desc: "Required to create spreadsheets and run Apps Script.",
+              },
+              {
+                icon: "fa-solid fa-table",
+                title: "Google Sheets access",
+                desc:
+                  'Open <a class="inline" href="' +
+                  SHEETS +
+                  '" target="_blank" rel="noopener">sheets.google.com</a> and make sure you can create a new spreadsheet.',
+              },
+              {
+                icon: "fa-brands fa-github",
+                title: "Fintrack GitHub repository",
+                desc: "The application source code you will download or clone.",
+                link: { href: REPO, label: "Open repository" },
+              },
+              {
+                icon: "fa-solid fa-globe",
+                title: "A modern browser",
+                desc: "Chrome, Firefox, Edge, or Safari — with access to Apps Script.",
+              },
+            ],
+          },
+          steps: [
+            {
+              /* 1 */ kicker: "Step 1 of 5",
+              title: "Set Up Google Sheets (Database)",
+              lead: "This spreadsheet will become the database for all of your Fintrack transactions.",
+              items: [
+                'Open <a class="inline" href="' +
+                  SHEETS +
+                  '" target="_blank" rel="noopener">Google Sheets</a> and create a new spreadsheet.',
+                "Give it a name, for example: <code>Database Fintrack</code>.",
+                "Copy the <b>Spreadsheet ID</b> from your browser URL (see the image below).",
+              ],
+            },
+            {
+              /* 2 */ kicker: "Step 2 of 5",
+              title: "Get the Code from GitHub & Install in Apps Script",
+              lead: "The entire Fintrack app consists of just two files: <code>backend.gs</code> and <code>index.html</code>.",
+              items: [
+                "In the spreadsheet you created, click <code>Extensions → Apps Script</code> in the top menu bar.",
+                "You will be taken to the Google Apps Script editor.",
+                "Delete all default files (if any), or edit the contents of the default <code>backend.gs</code> file.",
+                "Copy the contents of <code>backend.gs</code> (from your download/clone) into the editor's <code>backend.gs</code> file.",
+                'Create a new HTML file: click the <code>+</code> icon next to "Files", choose <b>HTML</b>, and name it <code>Index</code> (Apps Script will automatically create <code>index.html</code>). Paste the contents of <code>index.html</code> into it.',
+                "Save the project with the save button (floppy icon) or <kbd>Ctrl</kbd> + <kbd>S</kbd>.",
+              ],
+            },
+            {
+              /* 3 */ kicker: "Step 3 of 5",
+              title: "Configure SPREADSHEET_ID",
+              lead: "To connect the app to a specific Google Sheet, register the spreadsheet ID via <b>Script Properties</b>.",
+              items: [
+                "In the Apps Script editor's left sidebar, click the gear icon (<b>Project Settings</b>).",
+                "Scroll down to the <b>Script Properties</b> section.",
+                "Click <b>Add script property</b>.",
+                "Enter <code>SPREADSHEET_ID</code> as the Property name.",
+                "Paste the Spreadsheet ID you copied in Step 1 as the Value.",
+                "Click <b>Save script properties</b>.",
+              ],
+              note: "If this property is not set, Apps Script will automatically try to use the bound spreadsheet (<i>active spreadsheet</i>). Setting it explicitly is still recommended so your data always lands in the right place.",
+            },
+            {
+              /* 4 */ kicker: "Step 4 of 5",
+              title: "Deploy as a Web App",
+              lead: "This step publishes your app as a web URL anyone can open.",
+              items: [
+                "Click <b>Deploy</b> at the top-right of the editor, then choose <b>New deployment</b>.",
+                'Click the gear icon (<i>Select type</i>) next to "Configuration" and choose <b>Web app</b>.',
+                "Fill in the deployment configuration as shown below.",
+                "Click <b>Deploy</b>.",
+                "Google will ask for authorization: click <b>Authorize Access</b>, choose your account, click <b>Advanced</b> at the bottom, select <b>Go to Fintrack (unsafe)</b>, then click <b>Allow</b>.",
+                "Once deployment succeeds, copy the <b>Web app URL</b>. This URL is your Fintrack app link!",
+              ],
+              note: "The <code>(unsafe)</code> label appears because your app has not gone through Google's verification process. This is <b>normal and safe</b> as long as you are authorizing an app you deployed yourself.",
+            },
+            {
+              /* 5 */ kicker: "Step 5 of 5",
+              title: "Load Sample Data (Seed Data)",
+              lead: "The app starts empty. Run the seed once so charts and monthly recaps appear right away.",
+              items: [
+                "Go back to the Apps Script editor.",
+                "In the function dropdown at the top (right of the Debug button), select <code>seedInitialData</code>.",
+                "Click <b>Run</b> (the play icon).",
+                "After a successful run, check your spreadsheet: two new sheets — <b>Januari 2026</b> and <b>Februari 2026</b> — filled with transactions, plus a <b>MASTER_REKAP</b> sheet with recaps and monthly budgets.",
+                "Open (or reload) your Web app URL — plans, summary cards, and the 6-month spending trend chart will fill in dynamically.",
+              ],
+            },
+          ],
+          step2: {
+            pickTitle: "Get the code — pick one",
+            installTitle: "Install in Apps Script",
+            options: [
+              {
+                icon: "fa-solid fa-file-zipper",
+                title: "Download ZIP",
+                desc: "On the repository page, click <code>Code → Download ZIP</code>, then extract it into a local folder.",
+              },
+              {
+                icon: "fa-solid fa-terminal",
+                title: "Git Clone",
+                desc: "Run the command shown here in your Terminal. The clone contains <code>backend.gs</code> and <code>index.html</code>.",
+              },
+            ],
+          },
+          mocks: {
+            m1: "Copy the highlighted part — a long random string of letters and digits. Keep this ID for Step 3.",
+            m2: "The final project structure in Apps Script: just these two files.",
+            m3: "The SPREADSHEET_ID property connects the app to your database.",
+            m4: '"Who has access" must be set to Anyone so the backend can interact smoothly.',
+            m5: "The spreadsheet after seedInitialData runs successfully.",
+            saved: "Saved",
+          },
+          exec: { label: "The URL format you will receive:" },
+          features: {
+            title: "Key Features",
+            sub: "What you get once setup is complete.",
+            items: [
+              {
+                icon: "fa-solid fa-calendar-plus",
+                tint: "bg-teal-light text-moss-dark",
+                title: "Auto-create Sheet",
+                desc: "Adding a transaction in a new month (e.g., Maret 2026)? The system creates the sheet automatically — headers laid out and total formulas ready at the bottom.",
+              },
+              {
+                icon: "fa-solid fa-wallet",
+                tint: "bg-surface-yellow text-yellow-dark",
+                title: "Budgeting",
+                desc: 'Click (Ubah) on the "Target Budget" card to set the selected month\'s spending target. When spending exceeds the limit, recap badges and indicators automatically turn red.',
+              },
+              {
+                icon: "fa-solid fa-trash-can",
+                tint: "bg-coral-light/60 text-coral-dark",
+                title: "Trash Bin (Soft Delete)",
+                desc: "Deleting never destroys data — entries move to the TRASH sheet and can be restored via the trash button in the main UI.",
+              },
+              {
+                icon: "fa-solid fa-file-export",
+                tint: "bg-rose-light text-primary",
+                title: "CSV & Sheets Export",
+                desc: "Download a CSV report locally, or jump straight to a specific sheet tab through the export link.",
+              },
+            ],
+          },
+          faq: {
+            title: "FAQ & Troubleshooting",
+            sub: "The questions that come up most during setup.",
+            items: [
+              {
+                q: 'Why must "Who has access" be set to "Anyone"?',
+                a: "So the web app can be accessed and interact smoothly with the backend. Restricting it to specific accounts can block frontend requests or trigger authorization errors.",
+              },
+              {
+                q: 'Is the "Go to Fintrack (unsafe)" authorization warning safe?',
+                a: "Yes — as long as it is an app you deployed yourself. The label appears because the app has not been verified by Google, not because it is dangerous.",
+              },
+              {
+                q: "What happens if I leave SPREADSHEET_ID unset?",
+                a: "Apps Script falls back to the bound spreadsheet (active spreadsheet). Still, setting it explicitly is recommended so your data always lands in the correct spreadsheet.",
+              },
+              {
+                q: "How do I update the app after editing the code?",
+                a: 'Open Deploy → Manage deployments → the pencil icon (Edit), change Version to "New version", then click Deploy. Your <code>/exec</code> URL stays the same.',
+              },
+              {
+                q: "What if I add a transaction in a month that has no sheet yet?",
+                a: "No need to create sheets manually — the Auto-create Sheet feature creates the monthly sheet for you, complete with headers and total formulas.",
+              },
+              {
+                q: "Where is my data stored?",
+                a: "All data lives in Google Sheets inside your own Google Drive. You remain in full control of it.",
+              },
+            ],
+          },
+          footer: {
+            tag: "The official documentation for Fintrack — a personal finance tracker built on Google Apps Script + Google Sheets.",
+            cols: [
+              {
+                title: "Navigation",
+                links: [
+                  { label: "Introduction", href: "#intro" },
+                  { label: "Prerequisites", href: "#prerequisites" },
+                  { label: "Key Features", href: "#features" },
+                  { label: "FAQ", href: "#faq" },
+                ],
+              },
+              {
+                title: "Project",
+                links: [
+                  { label: "Home", href: "./index.html" },
+                  { label: "GitHub Repository", href: REPO, ext: true },
+                  { label: "Contact", href: "mailto:rifqiadyasta2@gmail.com" },
+                ],
+              },
+            ],
+            rights: "© 2026 Fintrack. All rights reserved.",
+            made: "Built with Google Apps Script + Google Sheets",
+          },
+        },
+      };
+
+      /* ═══════════════════════ APLIKASI VUE ═══════════════════════ */
+      const { createApp, ref, computed, onMounted, watch } = Vue;
+
+      createApp({
+        setup() {
+          const lang = ref(localStorage.getItem("fintrack-docs-lang") || "id");
+          const t = computed(() => I18N[lang.value] || I18N.id);
+
+          const showBanner = ref(true);
+          const tocOpen = ref(false);
+          const openFaq = ref(-1);
+          const active = ref("intro");
+          const progress = ref(0);
+          const showTop = ref(false);
+          const copied = ref("");
+
+          const SECTION_IDS = [
+            "intro",
+            "prerequisites",
+            "step-1",
+            "step-2",
+            "step-3",
+            "step-4",
+            "step-5",
+            "features",
+            "faq",
+          ];
+
+          function setLang(l) {
+            lang.value = l;
+            localStorage.setItem("fintrack-docs-lang", l);
+          }
+          watch(lang, (l) => {
+            document.documentElement.lang = l;
+            document.title = t.value.docTitle;
+          });
+
+          function copyText(text, key) {
+            const done = () => {
+              copied.value = key;
+              setTimeout(() => {
+                if (copied.value === key) copied.value = "";
+              }, 2000);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done).catch(done);
+            } else {
+              done();
+            }
+          }
+
+          function scrollTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+
+          function onScroll() {
+            const el = document.documentElement;
+            const max = el.scrollHeight - el.clientHeight;
+            progress.value =
+              max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0;
+            showTop.value = el.scrollTop > 600;
+          }
+
+          onMounted(() => {
+            document.title = t.value.docTitle;
+            window.addEventListener("scroll", onScroll, { passive: true });
+            onScroll();
+
+            /* Scroll-spy untuk TOC */
+            const observer = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((e) => {
+                  if (e.isIntersecting) active.value = e.target.id;
+                });
+              },
+              { rootMargin: "-25% 0px -70% 0px" },
+            );
+            SECTION_IDS.forEach((id) => {
+              const el = document.getElementById(id);
+              if (el) observer.observe(el);
+            });
+          });
+
+          return {
+            lang,
+            t,
+            showBanner,
+            tocOpen,
+            openFaq,
+            active,
+            progress,
+            showTop,
+            copied,
+            setLang,
+            copyText,
+            scrollTop,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

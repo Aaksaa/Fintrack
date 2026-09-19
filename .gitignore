@@ -1,0 +1,54 @@
+# ===== Environment & secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== Google Apps Script (clasp) =====
+# Credentials and local script config should not be committed
+.clasprc.json
+.clasp.json
+
+# ===== Dependencies =====
+node_modules/
+bower_components/
+
+# ===== Build output =====
+dist/
+build/
+out/
+
+# ===== Logs =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== Editor / IDE =====
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Misc =====
+*.tmp
+*.bak
+.cache/
+
+
+# Lainnya
+template.html
+skills-lock.json
+tech-stack.md
+main-project.md
+DESIGN-miro.md
+.agents/*

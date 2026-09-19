@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fintrack - Catat pengeluaran dengan mudah dan teratur</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  
+  <!-- Vue JS 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <!-- Tailwind Custom Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1c1c1e',
+            brandYellow: '#ffd02f',
+            brandYellowDeep: '#fcb900',
+            yellowLight: '#fff4c4',
+            yellowDark: '#746019',
+            brandBlue: '#4262ff',
+            brandCoral: '#ff9999',
+            coralLight: '#ffc6c6',
+            coralDark: '#600000',
+            brandRose: '#ffd8f4',
+            roseLight: '#fde0f0',
+            brandTeal: '#0fbcb0',
+            tealLight: '#c3faf5',
+            mossDark: '#187574',
+            hairline: '#e0e2e8',
+            hairlineSoft: '#eef0f3',
+            surface: '#f7f8fa',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #f7f8fa;
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    /* Transition styles */
+    .modal-enter-active, .modal-leave-active {
+      transition: opacity 0.3s ease;
+    }
+    .modal-enter-from, .modal-leave-to {
+      opacity: 0;
+    }
+    .toast-list-enter-active, .toast-list-leave-active {
+      transition: all 0.3s ease;
+    }
+    .toast-list-enter-from, .toast-list-leave-to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  </style>
+</head>
+<body class="text-primary antialiased min-h-screen flex flex-col">
+
+  <div id="app" class="flex-grow flex flex-col" v-cloak>
+    
+    <!-- Top Announcement Strip (Sticky Notice) -->
+    <div class="bg-primary text-white text-center text-xs font-semibold py-2 px-4 tracking-wider uppercase flex justify-center items-center gap-2">
+      <span class="bg-[#ffd02f] text-primary px-1.5 py-0.5 rounded text-[10px] font-bold">INFO</span>
+      <span>Sistem pencatatan otomatis mendeteksi dan mengarsipkan transaksi per bulan.</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-hairline sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <!-- Logo Mascot with Specified Image -->
+    <a href=#>
+      <img 
+        src="https://s6.imgcdn.dev/Y8KxEd.webp" 
+        alt="fintrack-logo.webp" 
+        border="0" 
+        width="40" 
+        height="40" 
+        class="w-10 h-10 object-contain"
+      >
+    </a>
+    <div>
+      <h1 class="font-bold text-lg leading-tight select-none">Fintrack</h1>
+      <p class="text-xs text-stone-500 font-medium">Catat pengeluaran dengan mudah dan teratur</p>
+    </div>
+  </div>
+</header>
+      
+      <div class="flex items-center gap-3">
+        <span class="hidden md:inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
+          Database Aktif
+        </span>
+        <button 
+          v-if="isLocalMock" 
+          @click="runInitialSeed"
+          class="bg-yellowLight text-yellowDark hover:bg-[#ffe082] px-3 py-1.5 rounded-full text-xs font-semibold border border-[#ffe0b2] active:scale-95 transition-all select-none"
+        >
+          <i class="fa-solid fa-database mr-1"></i> Seed Data Contoh
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+      
+      <!-- Summary Cards Grid (Miro Pastel Sticky Note Style) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Yellow Card: Total Accumulation -->
+        <div class="bg-brandYellow text-primary p-6 rounded-3xl border border-hairline shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-85">Total Keseluruhan</span>
+            <i class="fa-solid fa-vault text-lg opacity-75"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold select-all tracking-tight tabular-nums">
+              {{ formatRupiah(totalAccumulated) }}
+            </h3>
+            <p class="text-[10px] font-semibold mt-1 opacity-75">Akumulasi seluruh bulan</p>
+          </div>
+        </div>
+
+        <!-- Rose Card: Total This Month -->
+        <div class="bg-roseLight text-primary p-6 rounded-3xl border border-hairline shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-85">Total Periode Terpilih</span>
+            <i class="fa-solid fa-calendar-day text-lg opacity-75"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold select-all tracking-tight tabular-nums">
+              {{ formatRupiah(totalSelectedMonth) }}
+            </h3>
+            <p class="text-[10px] font-semibold mt-1 opacity-75">Periode: {{ selectedMonth }}</p>
+          </div>
+        </div>
+
+        <!-- Teal Card: Budget Remaining -->
+        <div 
+          :class="[
+            isOverBudget ? 'bg-red-100 text-red-950 border-red-200' : 'bg-tealLight text-primary border-hairline'
+          ]"
+          class="p-6 rounded-3xl border shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-all duration-300"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-85">
+              {{ isOverBudget ? 'Melebihi Budget' : 'Sisa Budget Periode' }}
+            </span>
+            <i 
+              :class="[isOverBudget ? 'fa-triangle-exclamation text-red-700 animate-bounce' : 'fa-wallet text-teal-800']"
+              class="fa-solid text-lg"
+            ></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold select-all tracking-tight tabular-nums">
+              {{ formatRupiah(Math.abs(remainingBudget)) }}
+              <span v-if="isOverBudget" class="text-sm font-semibold text-red-700 block">Minus</span>
+            </h3>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="text-[10px] font-semibold opacity-75">Budget: {{ formatRupiah(selectedMonthBudget) }}</span>
+              <button 
+                @click="promptEditBudget"
+                class="text-[10px] underline hover:text-brandBlue font-bold focus:outline-none"
+              >
+                (Ubah)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coral Card: Average per Transaction -->
+        <div class="bg-coralLight text-primary p-6 rounded-3xl border border-hairline shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-85">Rata-rata Transaksi</span>
+            <i class="fa-solid fa-chart-line text-lg opacity-75"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold select-all tracking-tight tabular-nums">
+              {{ formatRupiah(averageSelectedMonth) }}
+            </h3>
+            <p class="text-[10px] font-semibold mt-1 opacity-75">{{ selectedMonthTransactionsCount }} Transaksi tercatat</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Action & Filter Bar -->
+      <section class="bg-white border border-hairline p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        
+        <!-- Filter dropdowns -->
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <!-- Periode -->
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold text-stone-500 uppercase mb-1">Periode</label>
+            <select 
+              id="select-month"
+              v-model="selectedMonth"
+              @change="fetchTransactions"
+              class="bg-surface text-primary text-sm font-semibold rounded-full px-4 py-2 border border-hairline focus:outline-none focus:border-brandBlue cursor-pointer select-none"
+            >
+              <option value="Semua Bulan">Semua Bulan</option>
+              <option v-for="m in availableMonths" :key="m" :value="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <!-- Kategori -->
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold text-stone-500 uppercase mb-1">Kategori</label>
+            <select 
+              id="select-category"
+              v-model="selectedCategory"
+              class="bg-surface text-primary text-sm font-semibold rounded-full px-4 py-2 border border-hairline focus:outline-none focus:border-brandBlue cursor-pointer select-none"
+            >
+              <option value="Semua Kategori">Semua Kategori</option>
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <!-- Search Input -->
+          <div class="flex flex-col w-full sm:w-48 lg:w-64">
+            <label class="text-[10px] font-bold text-stone-500 uppercase mb-1">Cari Deskripsi</label>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-xs"></i>
+              <input 
+                id="input-search"
+                type="text" 
+                v-model="searchQuery" 
+                placeholder="Cari keterangan..."
+                class="w-full bg-surface text-primary placeholder-stone-400 text-xs rounded-full pl-9 pr-4 py-2 border border-hairline focus:outline-none focus:border-brandBlue h-9"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Call to Actions -->
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+          <button 
+            id="btn-tambah"
+            @click="openAddModal"
+            class="bg-[#00b473] hover:bg-[#009b62] text-white font-semibold text-xs px-5 py-3 rounded-full active:scale-95 transition-all select-none flex items-center gap-2 shadow-sm"
+          >
+            <i class="fa-solid fa-plus text-xs"></i> Tambah Pengeluaran Baru
+          </button>
+          
+          <button 
+            id="btn-refresh"
+            @click="fetchDataInitial"
+            class="bg-brandBlue hover:bg-[#3452eb] text-white font-semibold text-xs px-5 py-3 rounded-full active:scale-95 transition-all select-none flex items-center gap-2 shadow-sm"
+          >
+            <i class="fa-solid fa-rotate text-xs" :class="{'animate-spin': loading}"></i> Refresh Data
+          </button>
+          
+          <!-- Dropdown Export -->
+          <div class="relative inline-block text-left" id="export-dropdown-container">
+            <button 
+              id="btn-export"
+              @click="toggleExportDropdown"
+              class="border border-hairline bg-transparent hover:bg-surface text-primary font-semibold text-xs px-5 py-3 rounded-full active:scale-95 transition-all select-none flex items-center gap-2"
+            >
+              <i class="fa-solid fa-download text-xs"></i> Export <i class="fa-solid fa-chevron-down text-[10px]"></i>
+            </button>
+            <div 
+              v-if="showExportDropdown" 
+              class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10 border border-hairline"
+            >
+              <div class="py-1">
+                <button 
+                  @click="exportCSV" 
+                  class="group flex items-center px-4 py-2 text-xs text-stone-700 hover:bg-surface w-full text-left"
+                >
+                  <i class="fa-solid fa-file-csv mr-2.5 text-stone-500"></i> Unduh CSV Laporan
+                </button>
+                <a 
+                  v-if="activeSheetLink" 
+                  :href="activeSheetLink" 
+                  target="_blank"
+                  class="group flex items-center px-4 py-2 text-xs text-stone-700 hover:bg-surface w-full text-left"
+                >
+                  <i class="fa-solid fa-file-excel mr-2.5 text-stone-500"></i> Buka Google Sheet
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trash Button -->
+          <button 
+            id="btn-trash"
+            @click="openTrashModal"
+            class="border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs px-4 py-3 rounded-full active:scale-95 transition-all select-none flex items-center gap-2"
+          >
+            <i class="fa-solid fa-trash-can text-xs"></i> Sampah
+          </button>
+        </div>
+
+      </section>
+
+      <!-- Main Section: Table and Charts (Bento Grid) -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Part: Transaction List (Intelligent List Archetype) -->
+        <div class="lg:col-span-2 bg-white border border-hairline rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+          
+          <div class="border-b border-hairline px-6 py-4 flex items-center justify-between bg-surface-soft">
+            <h2 class="font-bold text-sm select-none">
+              Daftar Transaksi Bulanan 
+              <span class="text-xs font-normal text-stone-500">({{ filteredTransactions.length }} item)</span>
+            </h2>
+            <span class="text-[10px] text-stone-500 font-medium">Terakhir Update: {{ lastUpdate || '-' }}</span>
+          </div>
+
+          <div class="overflow-x-auto flex-grow">
+            <table class="min-w-full divide-y divide-hairline">
+              <thead class="bg-surface">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-[10px] font-bold text-stone-500 uppercase tracking-wider w-20">No</th>
+                  <th scope="col" class="px-6 py-3 text-left text-[10px] font-bold text-stone-500 uppercase tracking-wider w-28">Tanggal</th>
+                  <th scope="col" class="px-6 py-3 text-left text-[10px] font-bold text-stone-500 uppercase tracking-wider w-28">Kategori</th>
+                  <th scope="col" class="px-6 py-3 text-left text-[10px] font-bold text-stone-500 uppercase tracking-wider">Keterangan</th>
+                  <th scope="col" class="px-6 py-3 text-right text-[10px] font-bold text-stone-500 uppercase tracking-wider w-36">Jumlah</th>
+                  <th scope="col" class="px-6 py-3 text-center text-[10px] font-bold text-stone-500 uppercase tracking-wider w-24">Bulan</th>
+                  <th scope="col" class="px-6 py-3 class=text-right text-[10px] font-bold text-stone-500 uppercase tracking-wider w-28">Aksi</th>
+                </tr>
+              </thead>
+              
+              <tbody class="bg-white divide-y divide-hairline">
+                
+                <!-- Loading State Skeletons -->
+                <template v-if="loading">
+                  <tr v-for="i in 5" :key="i" class="animate-pulse">
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-10"></div></td>
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-16"></div></td>
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-14"></div></td>
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-48"></div></td>
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-20 ml-auto"></div></td>
+                    <td class="px-6 py-4"><div class="h-3.5 bg-gray-100 rounded w-16 mx-auto"></div></td>
+                    <td class="px-6 py-4 flex gap-1 justify-end"><div class="h-6 bg-gray-100 rounded-full w-12"></div></td>
+                  </tr>
+                </template>
+
+                <!-- Empty State -->
+                <template v-else-if="filteredTransactions.length === 0">
+                  <tr>
+                    <td colspan="7" class="px-6 py-20 text-center">
+                      <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="w-16 h-16 bg-yellowLight text-yellowDark rounded-full flex items-center justify-center text-xl shadow-sm">
+                          <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold text-primary">Tidak Ada Transaksi Ditemukan</p>
+                          <p class="text-xs text-stone-500 mt-1 max-w-sm mx-auto">Belum ada pencatatan di periode ini atau query pencarian Anda tidak mencocokkan apa pun.</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+
+                <!-- Data Rows -->
+                <template v-else>
+                  <tr 
+                    v-for="tx in filteredTransactions" 
+                    :key="tx.id" 
+                    class="hover:bg-surface-soft transition-colors duration-150"
+                  >
+                    <td class="px-6 py-4 text-xs font-semibold text-stone-600 select-all tabular-nums">{{ tx.no }}</td>
+                    <td class="px-6 py-4 text-xs text-stone-600 select-all tabular-nums">{{ tx.tanggal }}</td>
+                    <td class="px-6 py-4 text-xs">
+                      <!-- Category badge colors -->
+                      <span 
+                        :class="getCategoryBadgeClass(tx.kategori)"
+                        class="px-2.5 py-1 rounded-full text-[10px] font-bold select-none"
+                      >
+                        {{ tx.kategori }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-primary font-medium select-text break-words max-w-xs">{{ tx.keterangan }}</td>
+                    <td class="px-6 py-4 text-xs text-right font-semibold select-all tabular-nums">{{ formatRupiah(tx.jumlah) }}</td>
+                    <td class="px-6 py-4 text-xs text-center select-none">
+                      <span class="bg-gray-100 text-stone-600 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-semibold">
+                        {{ tx.bulan }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-right">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <button 
+                          @click="openEditModal(tx)" 
+                          class="h-7 w-7 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center active:scale-90 transition-all"
+                          title="Edit"
+                        >
+                          <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                        </button>
+                        <button 
+                          @click="deleteTransaction(tx.id)" 
+                          class="h-7 w-7 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center active:scale-90 transition-all"
+                          title="Hapus"
+                        >
+                          <i class="fa-solid fa-trash text-[10px]"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Subtotal Bar -->
+          <div class="border-t border-hairline bg-surface px-6 py-4 flex flex-col sm:flex-row justify-between gap-2.5 text-xs select-none">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="font-bold text-stone-500">SUBTOTAL PERIODE: <span class="text-primary font-semibold tabular-nums ml-1">{{ formatRupiah(totalSelectedMonth) }}</span></span>
+              <span class="hidden sm:inline text-stone-300">|</span>
+              <span class="font-bold text-stone-500">TRANSAKSI: <span class="text-primary font-semibold ml-1">{{ filteredTransactions.length }}</span></span>
+            </div>
+            <div>
+              <span class="font-bold text-stone-500">TOTAL SELURUH BULAN: <span class="text-brandBlue font-extrabold text-sm ml-1.5 tabular-nums">{{ formatRupiah(totalAccumulated) }}</span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Part: Chart & Trend Summary -->
+        <div class="space-y-6">
+          
+          <!-- Chart Container -->
+          <div class="bg-white border border-hairline p-5 rounded-2xl shadow-sm space-y-4">
+            <h3 class="font-bold text-sm border-b border-hairline pb-2.5 select-none">
+              <i class="fa-solid fa-chart-simple mr-1.5 text-brandYellowDeep"></i> Tren Pengeluaran (6 Bulan Terakhir)
+            </h3>
+            
+            <div class="relative h-64 w-full">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Master Rekap Card Grid Info -->
+          <div class="bg-white border border-hairline p-5 rounded-2xl shadow-sm space-y-4">
+            <h3 class="font-bold text-sm border-b border-hairline pb-2.5 flex justify-between items-center select-none">
+              <span><i class="fa-solid fa-folder-open mr-1.5 text-[#ff9999]"></i> Ringkasan Rekap Master</span>
+              <span class="text-[10px] text-stone-400 font-semibold">{{ monthlySummary.length }} Bulan aktif</span>
+            </h3>
+            
+            <div class="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
+              <div 
+                v-for="sum in monthlySummary" 
+                :key="sum.bulan"
+                class="flex items-center justify-between p-2.5 rounded-xl border border-hairlineSoft hover:bg-surface transition-all select-none"
+              >
+                <div>
+                  <h4 class="text-xs font-bold">{{ sum.bulan }}</h4>
+                  <p class="text-[10px] text-stone-500 font-semibold mt-0.5">
+                    {{ sum.jumlahTransaksi }} Transaksi · Avg: {{ formatRupiah(sum.rataRata) }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-bold block">{{ formatRupiah(sum.total) }}</span>
+                  <span 
+                    :class="[
+                      sum.total > sum.budget && sum.budget > 0 
+                        ? 'text-red-600 bg-red-50 border-red-200' 
+                        : 'text-stone-500 bg-stone-100 border-stone-200'
+                    ]"
+                    class="text-[9px] font-bold border rounded px-1.5 py-0.5 inline-block mt-1"
+                  >
+                    Limit: {{ sum.budget > 0 ? formatRupiah(sum.budget) : 'N/A' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-6 px-6 mt-12 border-t border-gray-800 text-center select-none">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+        <div class="text-stone-400">
+          <span>&copy; 2026 Fintrack Systems. Data disimpan otomatis per bulan ke Google Sheets.</span>
+        </div>
+        <div class="flex items-center gap-3 text-stone-300 font-semibold">
+          <span>Total Transaksi Database: {{ totalDatabaseCount }}</span>
+          <span>|</span>
+          <span class="flex items-center gap-1"><i class="fa-solid fa-server text-green-400 text-[10px]"></i> Server Apps Script</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Form Add/Edit Transaction Modal (Slide Over / Center Modal) -->
+    <transition name="modal">
+      <div v-if="showFormModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop Scrim -->
+        <div class="absolute inset-0 bg-primary bg-opacity-65" @click="closeFormModal"></div>
+        
+        <!-- Modal Content Container -->
+        <div class="bg-white rounded-3xl border border-hairline shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+          <!-- Modal Header -->
+          <div class="bg-primary text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="font-bold text-sm">
+              {{ formId ? 'Edit Pengeluaran' : 'Tambah Pengeluaran Baru' }}
+            </h3>
+            <button @click="closeFormModal" class="text-stone-400 hover:text-white transition-colors">
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+          
+          <!-- Modal Form -->
+          <form @submit.prevent="submitForm" class="p-6 space-y-4">
+            
+            <!-- Tanggal -->
+            <div class="space-y-1.5">
+              <label for="form-tanggal" class="text-[10px] font-bold text-stone-500 uppercase">Tanggal Transaksi</label>
+              <input 
+                id="form-tanggal"
+                type="date" 
+                v-model="formTanggal" 
+                required
+                class="w-full bg-white text-primary text-xs rounded-lg px-3.5 py-2.5 border border-hairline focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue h-11"
+              >
+            </div>
+
+            <!-- Kategori -->
+            <div class="space-y-1.5">
+              <label for="form-kategori" class="text-[10px] font-bold text-stone-500 uppercase">Kategori</label>
+              <select 
+                id="form-kategori"
+                v-model="formKategori" 
+                required
+                class="w-full bg-white text-primary text-xs rounded-lg px-3.5 py-2.5 border border-hairline focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue h-11 cursor-pointer"
+              >
+                <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+              </select>
+            </div>
+
+            <!-- Keterangan -->
+            <div class="space-y-1.5">
+              <label for="form-keterangan" class="text-[10px] font-bold text-stone-500 uppercase">Keterangan / Deskripsi</label>
+              <input 
+                id="form-keterangan"
+                type="text" 
+                v-model="formKeterangan" 
+                placeholder="Makan siang nasi padang, bensin, dll..."
+                required
+                class="w-full bg-white text-primary text-xs rounded-lg px-3.5 py-2.5 border border-hairline focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue h-11"
+              >
+            </div>
+
+            <!-- Jumlah Uang Keluar -->
+            <div class="space-y-1.5">
+              <label for="form-jumlah" class="text-[10px] font-bold text-stone-500 uppercase">Jumlah Uang Keluar (Rp)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500">Rp</span>
+                <input 
+                  id="form-jumlah"
+                  type="number" 
+                  v-model.number="formJumlah" 
+                  placeholder="Minimal Rp 1.000"
+                  min="1000"
+                  required
+                  class="w-full bg-white text-primary text-xs rounded-lg pl-10 pr-4 py-2.5 border border-hairline focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue h-11"
+                >
+              </div>
+            </div>
+
+            <!-- Dynamic Save Warning Location -->
+            <div class="bg-yellowLight text-yellowDark p-3.5 rounded-xl border border-[#ffe082] text-[10px] font-medium leading-relaxed">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+              Data akan disimpan pada database sheet: 
+              <span class="font-bold">{{ getIndonesianMonthYear(formTanggal) }}</span>. 
+              Nomor urut dan ID akan diatur otomatis.
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-2 pt-2">
+              <button 
+                id="form-batal"
+                type="button" 
+                @click="closeFormModal" 
+                class="border border-hairline hover:bg-surface text-primary font-bold text-xs px-5 py-3 rounded-full active:scale-95 transition-all flex items-center gap-1.5"
+              >
+                Batal
+              </button>
+              <button 
+                id="form-simpan"
+                type="submit" 
+                :disabled="formSaveLoading"
+                class="bg-primary hover:bg-[#2c2c34] text-white font-bold text-xs px-6 py-3 rounded-full active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <i v-if="formSaveLoading" class="fa-solid fa-spinner animate-spin"></i>
+                <i v-else class="fa-solid fa-check"></i>
+                {{ formSaveLoading ? 'Menyimpan...' : 'Simpan Transaksi' }}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Trash / Keranjang Sampah Modal -->
+    <transition name="modal">
+      <div v-if="showTrashModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop Scrim -->
+        <div class="absolute inset-0 bg-primary bg-opacity-65" @click="closeTrashModal"></div>
+        
+        <!-- Modal Content Container -->
+        <div class="bg-white rounded-3xl border border-hairline shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+          
+          <!-- Modal Header -->
+          <div class="bg-red-500 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="font-bold text-sm flex items-center gap-2">
+              <i class="fa-solid fa-trash-can"></i>
+              Keranjang Sampah (Soft Delete)
+            </h3>
+            <button @click="closeTrashModal" class="text-red-100 hover:text-white transition-colors">
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+
+          <!-- Modal Body Table -->
+          <div class="p-6 overflow-y-auto flex-grow space-y-4">
+            <p class="text-xs text-stone-500 leading-relaxed">
+              Daftar di bawah menunjukkan pengeluaran yang telah dihapus. Anda dapat memulihkannya kembali ke sheet bulan asalnya dengan mengklik tombol "Pulihkan".
+            </p>
+
+            <div class="border border-hairline rounded-xl overflow-hidden">
+              <table class="min-w-full divide-y divide-hairline text-xs">
+                <thead class="bg-surface">
+                  <tr>
+                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-stone-500 uppercase">No/ID</th>
+                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-stone-500 uppercase">Keterangan</th>
+                    <th scope="col" class="px-4 py-2.5 text-right font-bold text-stone-500 uppercase">Jumlah</th>
+                    <th scope="col" class="px-4 py-2.5 text-center font-bold text-stone-500 uppercase">Bulan Asal</th>
+                    <th scope="col" class="px-4 py-2.5 text-right font-bold text-stone-500 uppercase w-24">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-hairline bg-white">
+                  
+                  <template v-if="trashLoading">
+                    <tr v-for="i in 3" :key="i" class="animate-pulse">
+                      <td class="px-4 py-3"><div class="h-3 bg-gray-100 rounded w-16"></div></td>
+                      <td class="px-4 py-3"><div class="h-3 bg-gray-100 rounded w-32"></div></td>
+                      <td class="px-4 py-3"><div class="h-3 bg-gray-100 rounded w-16 ml-auto"></div></td>
+                      <td class="px-4 py-3"><div class="h-3 bg-gray-100 rounded w-14 mx-auto"></div></td>
+                      <td class="px-4 py-3"><div class="h-6 bg-gray-100 rounded w-16 ml-auto"></div></td>
+                    </tr>
+                  </template>
+
+                  <template v-else-if="trashTransactions.length === 0">
+                    <tr>
+                      <td colspan="5" class="px-4 py-8 text-center text-stone-400 font-medium">
+                        Keranjang sampah kosong.
+                      </td>
+                    </tr>
+                  </template>
+
+                  <template v-else>
+                    <tr v-for="t in trashTransactions" :key="t.id" class="hover:bg-red-50/30">
+                      <td class="px-4 py-3 select-all">
+                        <span class="font-bold block text-stone-600">{{ t.no }}</span>
+                        <span class="text-[9px] text-stone-400 block">{{ t.id }}</span>
+                      </td>
+                      <td class="px-4 py-3 select-text font-medium text-primary">
+                        {{ t.keterangan }}
+                        <span class="text-[9px] text-stone-400 block mt-0.5">Hapus: {{ t.deletedAt }}</span>
+                      </td>
+                      <td class="px-4 py-3 text-right font-semibold select-all tabular-nums text-red-600">
+                        {{ formatRupiah(t.jumlah) }}
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="bg-gray-100 text-stone-600 px-2 py-0.5 rounded text-[9px] font-semibold border border-gray-200">
+                          {{ t.bulanAsal }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <button 
+                          @click="restoreTrashTransaction(t.id)"
+                          class="px-2.5 py-1.5 rounded-full bg-green-50 text-green-700 hover:bg-green-100 text-[10px] font-bold border border-green-200 active:scale-95 transition-all flex items-center gap-1"
+                        >
+                          <i class="fa-solid fa-arrow-rotate-left"></i> Pulihkan
+                        </button>
+                        <button 
+                          @click="permanentlyDeleteTrashTransaction(t.id)"
+                          class="px-2.5 py-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 text-[10px] font-bold border border-red-200 active:scale-95 transition-all flex items-center gap-1"
+                        >
+                          <i class="fa-solid fa-trash-can"></i> Hapus Permanen
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="border-t border-hairline bg-surface px-6 py-4 flex justify-end">
+            <button 
+              @click="closeTrashModal"
+              class="bg-primary hover:bg-[#2c2c34] text-white font-bold text-xs px-5 py-2.5 rounded-full active:scale-95 transition-all"
+            >
+              Tutup
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </transition>
+
+    <!-- Floating Toast Notifications -->
+    <div class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm">
+      <transition-group name="toast-list">
+        <div 
+          v-for="toast in toasts" 
+          :key="toast.id"
+          :class="[
+            toast.type === 'success' ? 'bg-[#00b473] text-white' : 
+            toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-primary text-white'
+          ]"
+          class="px-4 py-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs font-semibold select-none border border-black border-opacity-5"
+        >
+          <span class="flex-grow select-text">{{ toast.message }}</span>
+          <button @click="removeToast(toast.id)" class="opacity-75 hover:opacity-100">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </transition-group>
+    </div>
+
+  </div>
+
+  <!-- Local environment check & Apps Script compatibility script -->
+  <script>
+    // Deteksi jika berjalan lokal di browser (diluar Apps Script)
+    const isLocalMock = typeof google === 'undefined' || !google.script || !google.script.run;
+    
+    if (isLocalMock) {
+      console.warn("Fintrack berjalan dalam mode LOKAL MOCK. Panggilan Google Apps Script di-simulasikan.");
+      
+      // Definisikan dummy localStorage untuk data simulasi
+      if (!localStorage.getItem('FINTRACT_TRANSACTIONS')) {
+        const mockInitial = [
+          { no: "AGU-001", tanggal: "30/08/2026", kategori: "Makanan", keterangan: "Makan Bakso Solo", jumlah: 45000, id: "TRX-2026-08-001", bulan: "Agustus 2026" },
+          { no: "AGU-002", tanggal: "28/08/2026", kategori: "Belanja", keterangan: "Beli Sabun & Odol", jumlah: 85000, id: "TRX-2026-08-002", bulan: "Agustus 2026" },
+          { no: "JUL-001", tanggal: "15/07/2026", kategori: "Transportasi", keterangan: "Bensin Pertamax Mobil", jumlah: 250000, id: "TRX-2026-07-001", bulan: "Juli 2026" },
+          { no: "JUL-002", tanggal: "10/07/2026", kategori: "Hiburan", keterangan: "Tiket Nonton Bioskop XXI", jumlah: 70000, id: "TRX-2026-07-002", bulan: "Juli 2026" }
+        ];
+        localStorage.setItem('FINTRACT_TRANSACTIONS', JSON.stringify(mockInitial));
+      }
+      
+      if (!localStorage.getItem('FINTRACT_REKAP')) {
+        const mockSummary = [
+          { bulan: "Agustus 2026", budget: 2000000, total: 130000, jumlahTransaksi: 2, rataRata: 65000, link: "#" },
+          { bulan: "Juli 2026", budget: 1500000, total: 320000, jumlahTransaksi: 2, rataRata: 160000, link: "#" }
+        ];
+        localStorage.setItem('FINTRACT_REKAP', JSON.stringify(mockSummary));
+      }
+      
+      if (!localStorage.getItem('FINTRACT_TRASH')) {
+        localStorage.setItem('FINTRACT_TRASH', JSON.stringify([]));
+      }
+
+      window.google = {
+        script: {
+          run: {
+            withSuccessHandler: function(onSuccess) {
+              return {
+                withFailureHandler: function(onFailure) {
+                  const getLocal = (key) => JSON.parse(localStorage.getItem(key));
+                  const setLocal = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+                  
+                  return {
+                    getAvailableMonths: function() {
+                      setTimeout(() => {
+                        const tx = getLocal('FINTRACT_TRANSACTIONS');
+                        const months = [...new Set(tx.map(t => t.bulan))];
+                        onSuccess({ success: true, data: months });
+                      }, 400);
+                    },
+                    getDataByMonth: function(month) {
+                      setTimeout(() => {
+                        const tx = getLocal('FINTRACT_TRANSACTIONS');
+                        const data = month === "Semua Bulan" ? tx : tx.filter(t => t.bulan === month);
+                        onSuccess({ success: true, data: data });
+                      }, 400);
+                    },
+                    getMonthlySummary: function() {
+                      setTimeout(() => {
+                        onSuccess({ success: true, data: getLocal('FINTRACT_REKAP') });
+                      }, 400);
+                    },
+                    tambahData: function(data) {
+                      setTimeout(() => {
+                        const tx = getLocal('FINTRACT_TRANSACTIONS');
+                        const rekap = getLocal('FINTRACT_REKAP');
+                        
+                        const dateParts = data.tanggal.split("-"); // YYYY-MM-DD
+                        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                        const mIdx = parseInt(dateParts[1], 10) - 1;
+                        const monthName = months[mIdx] + " " + dateParts[0];
+                        const dateStr = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+                        
+                        const id = "TRX-" + dateParts[0] + "-" + dateParts[1] + "-" + String(tx.length + 1).padStart(3, '0');
+                        const no = monthName.substring(0, 3).toUpperCase() + "-" + String(tx.filter(t => t.bulan === monthName).length + 1).padStart(3, '0');
+                        
+                        const newTx = {
+                          no: no,
+                          tanggal: dateStr,
+                          kategori: data.kategori || "Lainnya",
+                          keterangan: data.keterangan,
+                          jumlah: parseFloat(data.jumlah),
+                          id: id,
+                          bulan: monthName
+                        };
+                        
+                        tx.push(newTx);
+                        setLocal('FINTRACT_TRANSACTIONS', tx);
+                        
+                        // Recalculate Rekap
+                        let rIdx = rekap.findIndex(r => r.bulan === monthName);
+                        const monthTxs = tx.filter(t => t.bulan === monthName);
+                        const total = monthTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                        const avg = total / monthTxs.length;
+                        
+                        if (rIdx !== -1) {
+                          rekap[rIdx].total = total;
+                          rekap[rIdx].jumlahTransaksi = monthTxs.length;
+                          rekap[rIdx].rataRata = avg;
+                        } else {
+                          rekap.push({
+                            bulan: monthName,
+                            budget: 0,
+                            total: total,
+                            jumlahTransaksi: monthTxs.length,
+                            rataRata: avg,
+                            link: "#"
+                          });
+                        }
+                        setLocal('FINTRACT_REKAP', rekap);
+                        
+                        onSuccess({ success: true, message: `Mock: Transaksi ${id} berhasil disimpan!`, data: { id: id } });
+                      }, 500);
+                    },
+                    updateData: function(id, data) {
+                      setTimeout(() => {
+                        let tx = getLocal('FINTRACT_TRANSACTIONS');
+                        let rekap = getLocal('FINTRACT_REKAP');
+                        
+                        const idx = tx.findIndex(t => t.id === id);
+                        if (idx === -1) {
+                          onSuccess({ success: false, message: "Transaksi tidak ditemukan." });
+                          return;
+                        }
+                        
+                        const oldMonth = tx[idx].bulan;
+                        const dateParts = data.tanggal.split("-"); // YYYY-MM-DD
+                        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                        const mIdx = parseInt(dateParts[1], 10) - 1;
+                        const monthName = months[mIdx] + " " + dateParts[0];
+                        const dateStr = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+                        
+                        if (oldMonth !== monthName) {
+                          // Pindah bulan
+                          tx.splice(idx, 1);
+                          setLocal('FINTRACT_TRANSACTIONS', tx);
+                          
+                          // hitung ulang bulan lama
+                          let rIdxOld = rekap.findIndex(r => r.bulan === oldMonth);
+                          if (rIdxOld !== -1) {
+                            const oldTxs = tx.filter(t => t.bulan === oldMonth);
+                            rekap[rIdxOld].total = oldTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                            rekap[rIdxOld].jumlahTransaksi = oldTxs.length;
+                            rekap[rIdxOld].rataRata = oldTxs.length ? rekap[rIdxOld].total / oldTxs.length : 0;
+                          }
+                          
+                          // Tambahkan baru ke bulan baru
+                          const newId = "TRX-" + dateParts[0] + "-" + dateParts[1] + "-" + String(tx.length + 1).padStart(3, '0');
+                          const newNo = monthName.substring(0, 3).toUpperCase() + "-" + String(tx.filter(t => t.bulan === monthName).length + 1).padStart(3, '0');
+                          
+                          tx.push({
+                            no: newNo,
+                            tanggal: dateStr,
+                            kategori: data.kategori || "Lainnya",
+                            keterangan: data.keterangan,
+                            jumlah: parseFloat(data.jumlah),
+                            id: newId,
+                            bulan: monthName
+                          });
+                          setLocal('FINTRACT_TRANSACTIONS', tx);
+                          
+                          let rIdxNew = rekap.findIndex(r => r.bulan === monthName);
+                          const newTxs = tx.filter(t => t.bulan === monthName);
+                          const total = newTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                          const avg = total / newTxs.length;
+                          
+                          if (rIdxNew !== -1) {
+                            rekap[rIdxNew].total = total;
+                            rekap[rIdxNew].jumlahTransaksi = newTxs.length;
+                            rekap[rIdxNew].rataRata = avg;
+                          } else {
+                            rekap.push({
+                              bulan: monthName,
+                              budget: 0,
+                              total: total,
+                              jumlahTransaksi: newTxs.length,
+                              rataRata: avg,
+                              link: "#"
+                            });
+                          }
+                          setLocal('FINTRACT_REKAP', rekap);
+                        } else {
+                          // Update bulan yang sama
+                          tx[idx].tanggal = dateStr;
+                          tx[idx].kategori = data.kategori;
+                          tx[idx].keterangan = data.keterangan;
+                          tx[idx].jumlah = parseFloat(data.jumlah);
+                          setLocal('FINTRACT_TRANSACTIONS', tx);
+                          
+                          let rIdx = rekap.findIndex(r => r.bulan === monthName);
+                          if (rIdx !== -1) {
+                            const monthTxs = tx.filter(t => t.bulan === monthName);
+                            rekap[rIdx].total = monthTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                            rekap[rIdx].jumlahTransaksi = monthTxs.length;
+                            rekap[rIdx].rataRata = rekap[rIdx].total / monthTxs.length;
+                          }
+                          setLocal('FINTRACT_REKAP', rekap);
+                        }
+                        onSuccess({ success: true, message: "Mock: Transaksi berhasil diperbarui!" });
+                      }, 500);
+                    },
+                    hapusData: function(id) {
+                      setTimeout(() => {
+                        let tx = getLocal('FINTRACT_TRANSACTIONS');
+                        let rekap = getLocal('FINTRACT_REKAP');
+                        let trash = getLocal('FINTRACT_TRASH');
+                        
+                        const idx = tx.findIndex(t => t.id === id);
+                        if (idx === -1) {
+                          onSuccess({ success: false, message: "Mock: Transaksi tidak ditemukan." });
+                          return;
+                        }
+                        
+                        const deleted = tx[idx];
+                        tx.splice(idx, 1);
+                        setLocal('FINTRACT_TRANSACTIONS', tx);
+                        
+                        // Push to trash
+                        trash.push({
+                          id: deleted.id,
+                          bulanAsal: deleted.bulan,
+                          no: deleted.no,
+                          tanggal: deleted.tanggal,
+                          kategori: deleted.kategori,
+                          keterangan: deleted.keterangan,
+                          jumlah: deleted.jumlah,
+                          deletedAt: new Date().toLocaleString('id-ID')
+                        });
+                        setLocal('FINTRACT_TRASH', trash);
+                        
+                        // recalculate rekap
+                        const monthName = deleted.bulan;
+                        let rIdx = rekap.findIndex(r => r.bulan === monthName);
+                        if (rIdx !== -1) {
+                          const monthTxs = tx.filter(t => t.bulan === monthName);
+                          rekap[rIdx].total = monthTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                          rekap[rIdx].jumlahTransaksi = monthTxs.length;
+                          rekap[rIdx].rataRata = monthTxs.length ? rekap[rIdx].total / monthTxs.length : 0;
+                          setLocal('FINTRACT_REKAP', rekap);
+                        }
+                        
+                        onSuccess({ success: true, message: "Mock: Transaksi dipindahkan ke Sampah." });
+                      }, 400);
+                    },
+                    getTrashData: function() {
+                      setTimeout(() => {
+                        onSuccess({ success: true, data: getLocal('FINTRACT_TRASH') });
+                      }, 400);
+                    },
+                    restoreData: function(id) {
+                      setTimeout(() => {
+                        let tx = getLocal('FINTRACT_TRANSACTIONS');
+                        let rekap = getLocal('FINTRACT_REKAP');
+                        let trash = getLocal('FINTRACT_TRASH');
+                        
+                        const idx = trash.findIndex(t => t.id === id);
+                        if (idx === -1) {
+                          onSuccess({ success: false, message: "Mock: Data tidak ditemukan di sampah." });
+                          return;
+                        }
+                        
+                        const item = trash[idx];
+                        trash.splice(idx, 1);
+                        setLocal('FINTRACT_TRASH', trash);
+                        
+                        // restore
+                        tx.push({
+                          no: item.no,
+                          tanggal: item.tanggal,
+                          kategori: item.kategori,
+                          keterangan: item.keterangan,
+                          jumlah: item.jumlah,
+                          id: item.id,
+                          bulan: item.bulanAsal
+                        });
+                        setLocal('FINTRACT_TRANSACTIONS', tx);
+                        
+                        // recalculate rekap
+                        const monthName = item.bulanAsal;
+                        let rIdx = rekap.findIndex(r => r.bulan === monthName);
+                        const monthTxs = tx.filter(t => t.bulan === monthName);
+                        const total = monthTxs.reduce((sum, item) => sum + item.jumlah, 0);
+                        const avg = total / monthTxs.length;
+                        
+                        if (rIdx !== -1) {
+                          rekap[rIdx].total = total;
+                          rekap[rIdx].jumlahTransaksi = monthTxs.length;
+                          rekap[rIdx].rataRata = avg;
+                        } else {
+                          rekap.push({
+                            bulan: monthName,
+                            budget: 0,
+                            total: total,
+                            jumlahTransaksi: monthTxs.length,
+                            rataRata: avg,
+                            link: "#"
+                          });
+                        }
+                        setLocal('FINTRACT_REKAP', rekap);
+                        
+                        onSuccess({ success: true, message: `Mock: Transaksi berhasil dipulihkan!` });
+                      }, 500);
+                    },
+                    updateMonthlyBudget: function(bulanTahun, budget) {
+                      setTimeout(() => {
+                        let rekap = getLocal('FINTRACT_REKAP');
+                        let rIdx = rekap.findIndex(r => r.bulan === bulanTahun);
+                        if (rIdx !== -1) {
+                          rekap[rIdx].budget = parseFloat(budget);
+                        } else {
+                          rekap.push({
+                            bulan: bulanTahun,
+                            budget: parseFloat(budget),
+                            total: 0,
+                            jumlahTransaksi: 0,
+                            rataRata: 0,
+                            link: "#"
+                          });
+                        }
+                        setLocal('FINTRACT_REKAP', rekap);
+                        onSuccess({ success: true, message: "Mock: Budget bulanan di-update." });
+                      }, 400);
+                    },
+                    seedInitialData: function() {
+                      setTimeout(() => {
+                        localStorage.removeItem('FINTRACT_TRANSACTIONS');
+                        localStorage.removeItem('FINTRACT_REKAP');
+                        localStorage.removeItem('FINTRACT_TRASH');
+                        location.reload();
+                      }, 600);
+                    }
+                  };
+                }
+              };
+            }
+          }
+        }
+      };
+    }
+  </script>
+
+  <!-- Application Vue JS Code -->
+  <script>
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    createApp({
+      setup() {
+        // State variables
+        const transactions = ref([]);
+        const availableMonths = ref([]);
+        const monthlySummary = ref([]);
+        const trashTransactions = ref([]);
+        
+        const selectedMonth = ref("Semua Bulan");
+        const selectedCategory = ref("Semua Kategori");
+        const searchQuery = ref("");
+        
+        const loading = ref(true);
+        const trashLoading = ref(false);
+        const showFormModal = ref(false);
+        const showTrashModal = ref(false);
+        const showExportDropdown = ref(false);
+        const lastUpdate = ref("");
+        
+        // Form inputs state
+        const formId = ref(null); 
+        const formTanggal = ref(new Date().toISOString().substring(0, 10));
+        const formKategori = ref("Makanan");
+        const formKeterangan = ref("");
+        const formJumlah = ref(null);
+        const formSaveLoading = ref(false);
+        
+        // Toasts alert list
+        const toasts = ref([]);
+        
+        // Static categories list
+        const categories = ["Makanan", "Transportasi", "Belanja", "Hiburan", "Utilitas", "Lainnya"];
+
+        // Close export dropdown when clicking outside
+        onMounted(() => {
+          window.addEventListener('click', function(e) {
+            if (!document.getElementById('export-dropdown-container')?.contains(e.target)) {
+              showExportDropdown.value = false;
+            }
+          });
+        });
+
+        // Computed stats
+        const totalAccumulated = computed(() => {
+          return monthlySummary.value.reduce((sum, item) => sum + (item.total || 0), 0);
+        });
+
+        const totalSelectedMonth = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") {
+            return totalAccumulated.value;
+          }
+          const sum = monthlySummary.value.find(s => s.bulan === selectedMonth.value);
+          return sum ? sum.total : 0;
+        });
+
+        const selectedMonthTransactionsCount = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") {
+            return transactions.value.length;
+          }
+          const sum = monthlySummary.value.find(s => s.bulan === selectedMonth.value);
+          return sum ? sum.jumlahTransaksi : 0;
+        });
+
+        const averageSelectedMonth = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") {
+            return transactions.value.length ? totalAccumulated.value / transactions.value.length : 0;
+          }
+          const sum = monthlySummary.value.find(s => s.bulan === selectedMonth.value);
+          return sum ? sum.rataRata : 0;
+        });
+
+        const selectedMonthBudget = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") return 0;
+          const sum = monthlySummary.value.find(s => s.bulan === selectedMonth.value);
+          return sum ? sum.budget : 0;
+        });
+
+        const remainingBudget = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") return 0;
+          return selectedMonthBudget.value - totalSelectedMonth.value;
+        });
+
+        const isOverBudget = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") return false;
+          return selectedMonthBudget.value > 0 && totalSelectedMonth.value > selectedMonthBudget.value;
+        });
+
+        const totalDatabaseCount = computed(() => {
+          return monthlySummary.value.reduce((sum, item) => sum + (item.jumlahTransaksi || 0), 0);
+        });
+
+        const activeSheetLink = computed(() => {
+          if (selectedMonth.value === "Semua Bulan") return null;
+          const sum = monthlySummary.value.find(s => s.bulan === selectedMonth.value);
+          return sum ? sum.link : null;
+        });
+
+        // Filter and Search Transactions
+        const filteredTransactions = computed(() => {
+          return transactions.value.filter(tx => {
+            // Filter Kategori
+            const matchCategory = selectedCategory.value === "Semua Kategori" || tx.kategori === selectedCategory.value;
+            // Filter Deskripsi/Keterangan & No / ID
+            const query = searchQuery.value.toLowerCase().trim();
+            const matchQuery = !query || 
+                               tx.keterangan.toLowerCase().includes(query) || 
+                               tx.no.toLowerCase().includes(query) ||
+                               tx.id.toLowerCase().includes(query);
+            return matchCategory && matchQuery;
+          });
+        });
+
+        // Helper: Category badge styling classes
+        const getCategoryBadgeClass = (cat) => {
+          switch (cat) {
+            case 'Makanan': return 'bg-yellowLight text-yellowDark border border-[#ffe082]';
+            case 'Transportasi': return 'bg-tealLight text-mossDark border border-[#b2dfdb]';
+            case 'Belanja': return 'bg-roseLight text-coralDark border border-[#f8bbd0]';
+            case 'Hiburan': return 'bg-coralLight text-coralDark border border-[#ffccbc]';
+            case 'Utilitas': return 'bg-purple-100 text-purple-800 border border-purple-200';
+            default: return 'bg-gray-100 text-stone-600 border border-gray-200';
+          }
+        };
+
+        // Format Date Indonesian Month Year
+        const getIndonesianMonthYear = (dateString) => {
+          if (!dateString) return "";
+          const parts = dateString.split("-");
+          if (parts.length !== 3) return "";
+          const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+          const mIdx = parseInt(parts[1], 10) - 1;
+          return months[mIdx] + " " + parts[0];
+        };
+
+        // Format to Rupiah Currency
+        const formatRupiah = (value) => {
+          if (value === undefined || value === null) return "Rp 0";
+          return "Rp " + Math.round(value).toLocaleString("id-ID");
+        };
+
+        // Toast Messages management
+        const addToast = (message, type = 'info') => {
+          const id = Date.now() + Math.random().toString(36).substr(2, 5);
+          toasts.value.push({ id, message, type });
+          setTimeout(() => removeToast(id), 4000);
+        };
+
+        const removeToast = (id) => {
+          toasts.value = toasts.value.filter(t => t.id !== id);
+        };
+
+        // FETCH DATA BACKEND
+        const fetchAvailableMonths = () => {
+          return new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(response => {
+                if (response.success) {
+                  availableMonths.value = response.data;
+                  
+                  // Set default selected month to the latest available month
+                  if (selectedMonth.value === "Semua Bulan") {
+                    // Do nothing
+                  } else if (availableMonths.value.length > 0 && !availableMonths.value.includes(selectedMonth.value)) {
+                    selectedMonth.value = availableMonths.value[0];
+                  }
+                  resolve();
+                } else {
+                  addToast("Gagal memuat bulan: " + response.message, "error");
+                  reject(response.message);
+                }
+              })
+              .withFailureHandler(err => {
+                addToast("Error server: " + err, "error");
+                reject(err);
+              })
+              .getAvailableMonths();
+          });
+        };
+
+        const fetchMonthlySummary = () => {
+          return new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(response => {
+                if (response.success) {
+                  monthlySummary.value = response.data;
+                  updateChart(response.data);
+                  resolve();
+                } else {
+                  addToast("Gagal memuat ringkasan master: " + response.message, "error");
+                  reject(response.message);
+                }
+              })
+              .withFailureHandler(err => {
+                reject(err);
+              })
+              .getMonthlySummary();
+          });
+        };
+
+        const fetchTransactions = () => {
+          loading.value = true;
+          google.script.run
+            .withSuccessHandler(response => {
+              loading.value = false;
+              if (response.success) {
+                transactions.value = response.data;
+                lastUpdate.value = new Date().toLocaleTimeString('id-ID');
+              } else {
+                addToast("Gagal memuat transaksi: " + response.message, "error");
+              }
+            })
+            .withFailureHandler(err => {
+              loading.value = false;
+              addToast("Error server: " + err, "error");
+            })
+            .getDataByMonth(selectedMonth.value);
+        };
+
+        const fetchDataInitial = async () => {
+          loading.value = true;
+          try {
+            await fetchMonthlySummary();
+            await fetchAvailableMonths();
+            await fetchTransactions();
+          } catch (e) {
+            console.error("Gagal sinkronisasi data awal", e);
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        // Run Seed Initial Data
+        const runInitialSeed = () => {
+          loading.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res.success) {
+                addToast(res.message, "success");
+                fetchDataInitial();
+              } else {
+                addToast(res.message, "error");
+                loading.value = false;
+              }
+            })
+            .withFailureHandler(err => {
+              addToast("Seeding gagal: " + err, "error");
+              loading.value = false;
+            })
+            .seedInitialData();
+        };
+
+        // Budget adjustment prompt
+        const promptEditBudget = () => {
+          if (selectedMonth.value === "Semua Bulan") {
+            addToast("Pilih periode bulan tertentu untuk mengatur budget.", "error");
+            return;
+          }
+          const promptVal = prompt(`Masukkan Target Budget Bulanan untuk ${selectedMonth.value}:`, selectedMonthBudget.value);
+          if (promptVal === null) return; // cancel
+          
+          const budgetNum = parseFloat(promptVal);
+          if (isNaN(budgetNum) || budgetNum < 0) {
+            addToast("Masukkan nilai budget angka yang valid.", "error");
+            return;
+          }
+          
+          updatingBudget.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              updatingBudget.value = false;
+              if (res.success) {
+                addToast(res.message, "success");
+                fetchMonthlySummary(); // refresh values & charts
+              } else {
+                addToast(res.message, "error");
+              }
+            })
+            .withFailureHandler(err => {
+              updatingBudget.value = false;
+              addToast("Error: " + err, "error");
+            })
+            .updateMonthlyBudget(selectedMonth.value, budgetNum);
+        };
+
+        // Form Actions
+        const openAddModal = () => {
+          formId.value = null;
+          formTanggal.value = new Date().toISOString().substring(0, 10);
+          formKategori.value = "Makanan";
+          formKeterangan.value = "";
+          formJumlah.value = null;
+          showFormModal.value = true;
+        };
+
+        const openEditModal = (tx) => {
+          // Parse tanggal DD/MM/YYYY to YYYY-MM-DD
+          const parts = tx.tanggal.split("/");
+          formTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          formId.value = tx.id;
+          formKategori.value = tx.kategori;
+          formKeterangan.value = tx.keterangan;
+          formJumlah.value = tx.jumlah;
+          showFormModal.value = true;
+        };
+
+        const closeFormModal = () => {
+          showFormModal.value = false;
+        };
+
+        const submitForm = () => {
+          if (!formTanggal.value || !formKeterangan.value || !formJumlah.value) return;
+          
+          formSaveLoading.value = true;
+          const data = {
+            tanggal: formTanggal.value,
+            kategori: formKategori.value,
+            keterangan: formKeterangan.value,
+            jumlah: parseFloat(formJumlah.value)
+          };
+
+          const handleSuccess = (res) => {
+            formSaveLoading.value = false;
+            if (res.success) {
+              addToast(res.message, "success");
+              showFormModal.value = false;
+              
+              // Cek jika bulan dari transaksi yang disimpan sama dengan bulan filter sekarang
+              const txMonth = getIndonesianMonthYear(formTanggal.value);
+              
+              // Jika budget diset, cek over-budget alert
+              const currentSum = monthlySummary.value.find(s => s.bulan === txMonth);
+              if (currentSum && currentSum.budget > 0) {
+                const projectedTotal = currentSum.total + data.jumlah;
+                if (projectedTotal > currentSum.budget) {
+                  addToast(`⚠️ Peringatan: Pengeluaran bulan ${txMonth} melebihi target budget!`, "error");
+                }
+              }
+
+              fetchDataInitial(); // Reload everything
+            } else {
+              addToast(res.message, "error");
+            }
+          };
+
+          const handleFailure = (err) => {
+            formSaveLoading.value = false;
+            addToast("Simpan gagal: " + err, "error");
+          };
+
+          if (formId.value) {
+            // Edit
+            google.script.run
+              .withSuccessHandler(handleSuccess)
+              .withFailureHandler(handleFailure)
+              .updateData(formId.value, data);
+          } else {
+            // Add
+            google.script.run
+              .withSuccessHandler(handleSuccess)
+              .withFailureHandler(handleFailure)
+              .tambahData(data);
+          }
+        };
+
+        const deleteTransaction = (id) => {
+          if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini? Data akan masuk ke keranjang sampah.")) return;
+          
+          loading.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res.success) {
+                addToast(res.message, "success");
+                fetchDataInitial();
+              } else {
+                addToast(res.message, "error");
+                loading.value = false;
+              }
+            })
+            .withFailureHandler(err => {
+              addToast("Penghapusan gagal: " + err, "error");
+              loading.value = false;
+            })
+            .hapusData(id);
+        };
+
+        // Export Dropdown Trigger
+        const toggleExportDropdown = () => {
+          showExportDropdown.value = !showExportDropdown.value;
+        };
+
+        // Export CSV Function
+        const exportCSV = () => {
+          showExportDropdown.value = false;
+          if (filteredTransactions.value.length === 0) {
+            addToast("Tidak ada data untuk diekspor pada filter terpilih.", "error");
+            return;
+          }
+
+          let csvContent = "data:text/csv;charset=utf-8,";
+          csvContent += "No,Tanggal,Bulan,Kategori,Keterangan,Jumlah Uang Keluar,ID Unik Global\r\n";
+          
+          filteredTransactions.value.forEach(tx => {
+            const cleanDesc = tx.keterangan.replace(/"/g, '""');
+            csvContent += `"${tx.no}","${tx.tanggal}","${tx.bulan}","${tx.kategori}","${cleanDesc}",${tx.jumlah},"${tx.id}"\r\n`;
+          });
+
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          const namePeriod = selectedMonth.value.replace(/\s+/g, "_");
+          link.setAttribute("download", `Laporan_Pengeluaran_Fintrack_${namePeriod}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          addToast("Laporan CSV berhasil diunduh.", "success");
+        };
+
+        // Trash Bin Modal Actions
+        const openTrashModal = () => {
+          showTrashModal.value = true;
+          fetchTrashTransactions();
+        };
+
+        const closeTrashModal = () => {
+          showTrashModal.value = false;
+        };
+
+        const fetchTrashTransactions = () => {
+          trashLoading.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              trashLoading.value = false;
+              if (res.success) {
+                trashTransactions.value = res.data;
+              } else {
+                addToast("Gagal memuat sampah: " + res.message, "error");
+              }
+            })
+            .withFailureHandler(err => {
+              trashLoading.value = false;
+              addToast("Error Trash: " + err, "error");
+            })
+            .getTrashData();
+        };
+
+        const restoreTrashTransaction = (id) => {
+          trashLoading.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res.success) {
+                addToast(res.message, "success");
+                fetchTrashTransactions();
+                fetchDataInitial(); // Reload main
+              } else {
+                addToast(res.message, "error");
+                trashLoading.value = false;
+              }
+            })
+            .withFailureHandler(err => {
+              addToast("Gagal memulihkan: " + err, "error");
+              trashLoading.value = false;
+            })
+            .restoreData(id);
+        };
+
+        const permanentlyDeleteTrashTransaction = (id) => {
+          if (!confirm("Apakah Anda yakin ingin menghapus data ini permanen? Tindakan ini tidak bisa dibatalkan.")) return;
+          trashLoading.value = true;
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res.success) {
+                addToast(res.message, "success");
+                fetchTrashTransactions();
+                fetchDataInitial(); // Reload main
+              } else {
+                addToast(res.message, "error");
+                trashLoading.value = false;
+              }
+            })
+            .withFailureHandler(err => {
+              addToast("Gagal menghapus permanen: " + err, "error");
+              trashLoading.value = false;
+            })
+            .hapusDataPermanen(id);
+        };
+
+        // ChartJS Rendition & Updates
+        let chartInstance = null;
+
+        const updateChart = (summaryData) => {
+          // Render chart after DOM updates
+          setTimeout(() => {
+            const ctx = document.getElementById('trendChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            // Urutkan data secara kronologis (bulan terlama di kiri, terbaru di kanan)
+            const sortedChartData = [...summaryData].slice(0, 6).reverse();
+            
+            const labels = sortedChartData.map(item => item.bulan);
+            const dataPengeluaran = sortedChartData.map(item => item.total);
+            const dataBudget = sortedChartData.map(item => item.budget);
+            
+            if (chartInstance) {
+              chartInstance.destroy();
+            }
+            
+            chartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: 'Pengeluaran',
+                    data: dataPengeluaran,
+                    backgroundColor: 'rgba(255, 153, 153, 0.85)', // Coral Light
+                    borderColor: '#ff9999',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    barThickness: 24,
+                  },
+                  {
+                    label: 'Target Budget',
+                    data: dataBudget,
+                    type: 'line',
+                    borderColor: '#1c1c1e', // Black Line
+                    borderWidth: 2,
+                    fill: false,
+                    pointBackgroundColor: '#ffd02f', // Canary Yellow Point
+                    pointRadius: 4.5,
+                    tension: 0.1
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      font: {
+                        family: 'Outfit',
+                        size: 11,
+                        weight: '600'
+                      },
+                      color: '#1c1c1e'
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                          label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                        }
+                        return label;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      font: {
+                        family: 'Outfit',
+                        size: 10
+                      },
+                      color: '#6b6f7e',
+                      callback: function(value) {
+                        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
+                      }
+                    },
+                    grid: {
+                      color: '#eef0f3'
+                    }
+                  },
+                  x: {
+                    ticks: {
+                      font: {
+                        family: 'Outfit',
+                        size: 10,
+                        weight: '600'
+                      },
+                      color: '#1c1c1e'
+                    },
+                    grid: {
+                      display: false
+                    }
+                  }
+                }
+              }
+            });
+          }, 100);
+        };
+
+        // Hook initial
+        onMounted(() => {
+          fetchDataInitial();
+        });
+
+        return {
+          transactions,
+          availableMonths,
+          monthlySummary,
+          trashTransactions,
+          selectedMonth,
+          selectedCategory,
+          searchQuery,
+          loading,
+          trashLoading,
+          showFormModal,
+          showTrashModal,
+          showExportDropdown,
+          lastUpdate,
+          
+          formId,
+          formTanggal,
+          formKategori,
+          formKeterangan,
+          formJumlah,
+          formSaveLoading,
+          
+          toasts,
+          categories,
+          isLocalMock,
+          
+          // Computed
+          totalAccumulated,
+          totalSelectedMonth,
+          selectedMonthTransactionsCount,
+          averageSelectedMonth,
+          selectedMonthBudget,
+          remainingBudget,
+          isOverBudget,
+          totalDatabaseCount,
+          activeSheetLink,
+          filteredTransactions,
+          
+          // Methods
+          getCategoryBadgeClass,
+          getIndonesianMonthYear,
+          formatRupiah,
+          promptEditBudget,
+          openAddModal,
+          openEditModal,
+          closeFormModal,
+          submitForm,
+          deleteTransaction,
+          toggleExportDropdown,
+          exportCSV,
+          openTrashModal,
+          closeTrashModal,
+          restoreTrashTransaction,
+          permanentlyDeleteTrashTransaction,
+          fetchDataInitial,
+          fetchTransactions,
+          runInitialSeed,
+          removeToast
+        };
+      }
+    }).mount('#app');
+  </script>
+
+</body>
+</html>
