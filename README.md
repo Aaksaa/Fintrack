@@ -271,7 +271,7 @@ Untuk bug atau usulan fitur, buka [Issues](https://github.com/Aaksaa/fintrack/is
 
 ## Lisensi
 
-© 2026 Fintrack. Hak cipta dilindungi.
+© MIT
 
 <!-- Jika projek ingin dibuka lisensinya, tambahkan file LICENSE (misalnya MIT) dan perbarui bagian ini. -->
 
