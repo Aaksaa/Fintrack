@@ -6,7 +6,7 @@
 
 <p align="center">
   Aplikasi pencatatan keuangan pribadi yang sederhana dan jujur.<br>
-  Berjalan sepenuhnya di <b>Google Apps Script</b> + <b>Google Sheets</b> — tanpa server, tanpa instalasi, gratis selamanya.
+  Berjalan sepenuhnya di <b>Google Apps Script</b> + <b>Google Sheets</b> - tanpa server, tanpa instalasi, gratis selamanya.
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ---
 
-> *Fintrack is a personal finance tracker that runs entirely on the Google ecosystem — Apps Script as the backend, Google Sheets as the database. Your data stays yours, stored in your own Google Drive.*
+> _Fintrack is a personal finance tracker that runs entirely on the Google ecosystem - Apps Script as the backend, Google Sheets as the database. Your data stays yours, stored in your own Google Drive._
 
 ---
 
@@ -49,36 +49,32 @@
 
 **Fintrack** adalah aplikasi pencatatan keuangan pribadi yang dirancang dengan satu filosofi sederhana: **data Anda tetap menjadi milik Anda**.
 
-Alih-alih menyimpan data di server pihak ketiga, Fintrack menggunakan **Google Sheets milik Anda sendiri** sebagai database. Seluruh logika aplikasi berjalan di **Google Apps Script** dan disajikan sebagai **Web App** yang bisa diakses dari browser mana pun — desktop maupun ponsel.
+Alih-alih menyimpan data di server pihak ketiga, Fintrack menggunakan **Google Sheets milik Anda sendiri** sebagai database. Seluruh logika aplikasi berjalan di **Google Apps Script** dan disajikan sebagai **Web App** yang bisa diakses dari browser mana pun - desktop maupun ponsel.
 
-| | |
-|---|---|
-| **Untuk siapa?** | Siapa pun yang ingin mencatat pengeluaran & pemasukan bulanan tanpa aplikasi berbayar atau langganan. |
-| **Kenapa Sheets?** | Transparan, bisa diekspor kapan saja, dan tidak ada *vendor lock-in*. |
-| **Berapa biayanya?** | Gratis selamanya. Tidak ada server yang perlu dibayar. |
-| **Berapa lama setup?** | ±10 menit, cukup 5 langkah. |
+|                        |                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Untuk siapa?**       | Siapa pun yang ingin mencatat pengeluaran & pemasukan bulanan tanpa aplikasi berbayar atau langganan. |
+| **Kenapa Sheets?**     | Transparan, bisa diekspor kapan saja, dan tidak ada _vendor lock-in_.                                 |
+| **Berapa biayanya?**   | Gratis selamanya. Tidak ada server yang perlu dibayar.                                                |
+| **Berapa lama setup?** | ±10 menit, cukup 5 langkah.                                                                           |
 
 ---
 
 ## Fitur Utama
 
-| Fitur | Deskripsi |
-|---|---|
-| **Auto-create Sheet** | Menambah transaksi di bulan baru (misal *Maret 2026*)? Sistem otomatis membuat sheet baru, menyusun header, dan menyiapkan formula total di bagian bawah. |
-| **Budgeting** | Atur target pengeluaran bulan terpilih melalui tombol **(Ubah)** di card *"Target Budget"*. Jika pengeluaran melebihi limit, badge rekap dan kartu indikator otomatis berubah merah sebagai peringatan. |
-| **Trash Bin (Soft Delete)** | Menghapus data tidak membuangnya selamanya — data dipindahkan ke sheet `TRASH` dan bisa dipulihkan kembali lewat tombol **Sampah** di UI utama. |
-| **Ekspor CSV & Google Sheet** | Unduh laporan berformat CSV secara lokal, atau langsung lompat ke tab sheet spesifik melalui link ekspor. |
-| **Rekap & Visualisasi** | Rencana keuangan, ringkasan kartu, serta grafik tren pengeluaran 6 bulan terakhir yang terisi dinamis dari `MASTER_REKAP`. |
+| Fitur                         | Deskripsi                                                                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Auto-create Sheet**         | Menambah transaksi di bulan baru (misal _Maret 2026_)? Sistem otomatis membuat sheet baru, menyusun header, dan menyiapkan formula total di bagian bawah.                                               |
+| **Budgeting**                 | Atur target pengeluaran bulan terpilih melalui tombol **(Ubah)** di card _"Target Budget"_. Jika pengeluaran melebihi limit, badge rekap dan kartu indikator otomatis berubah merah sebagai peringatan. |
+| **Trash Bin (Soft Delete)**   | Menghapus data tidak membuangnya selamanya - data dipindahkan ke sheet `TRASH` dan bisa dipulihkan kembali lewat tombol **Sampah** di UI utama.                                                         |
+| **Ekspor CSV & Google Sheet** | Unduh laporan berformat CSV secara lokal, atau langsung lompat ke tab sheet spesifik melalui link ekspor.                                                                                               |
+| **Rekap & Visualisasi**       | Rencana keuangan, ringkasan kartu, serta grafik tren pengeluaran 6 bulan terakhir yang terisi dinamis dari `MASTER_REKAP`.                                                                              |
 
- 
 ## Tangkapan Layar
-
 
 <p align="center">
   <img src="assets/screenshoot.png" width="" alt="Screenshoot Fintrack">
 </p>
-
-
 
 ---
 
@@ -95,9 +91,9 @@ flowchart LR
     C --> S3["TRASH"]
 ```
 
-1. **Frontend** (`index.html`) — antarmuka web yang disajikan oleh Apps Script.
-2. **Backend** (`backend.gs`) — menangani logika transaksi, budgeting, rekap, dan soft delete.
-3. **Database** — Google Sheets Anda sendiri, diakses melalui `SpreadsheetApp`.
+1. **Frontend** (`index.html`) - antarmuka web yang disajikan oleh Apps Script.
+2. **Backend** (`backend.gs`) - menangani logika transaksi, budgeting, rekap, dan soft delete.
+3. **Database** - Google Sheets Anda sendiri, diakses melalui `SpreadsheetApp`.
 
 ---
 
@@ -105,11 +101,11 @@ flowchart LR
 
 Saat pertama kali dijalankan (atau setelah seed), spreadsheet Anda akan berisi:
 
-| Sheet | Fungsi |
-|---|---|
+| Sheet                              | Fungsi                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `Januari 2026`, `Februari 2026`, … | Satu sheet per bulan, berisi transaksi beserta formula total di bagian bawah. Sheet baru dibuat otomatis saat dibutuhkan. |
-| `MASTER_REKAP` | Rekapitulasi antar-bulan dan budget bulanan — sumber data grafik tren 6 bulan. |
-| `TRASH` | Penampungan sementara data yang dihapus (soft delete), dapat dipulihkan kapan saja. |
+| `MASTER_REKAP`                     | Rekapitulasi antar-bulan dan budget bulanan - sumber data grafik tren 6 bulan.                                            |
+| `TRASH`                            | Penampungan sementara data yang dihapus (soft delete), dapat dipulihkan kapan saja.                                       |
 
 ---
 
@@ -126,7 +122,7 @@ Sebelum memulai, pastikan Anda memiliki:
 
 ## Instalasi & Deployment
 
-Cara memasang dan menjalankan Fintrack menggunakan Google Apps Script — dari spreadsheet kosong hingga web app siap pakai.
+Cara memasang dan menjalankan Fintrack menggunakan Google Apps Script - dari spreadsheet kosong hingga web app siap pakai.
 
 ### 1. Siapkan Google Sheets (Database)
 
@@ -144,7 +140,7 @@ Cara memasang dan menjalankan Fintrack menggunakan Google Apps Script — dari s
 
 ### 2. Ambil Kode dari GitHub & Pasang di Apps Script
 
-Download atau clone projek dari GitHub — pilih salah satu:
+Download atau clone projek dari GitHub - pilih salah satu:
 
 - **Download ZIP:** klik tombol `Code` → `Download ZIP`, lalu ekstrak ke folder lokal.
 - **Git Clone:** jalankan perintah berikut di Terminal:
@@ -159,7 +155,7 @@ Kemudian pasang di Apps Script:
 2. Anda akan diarahkan ke editor Google Apps Script.
 3. Hapus semua file bawaan (jika ada), atau edit isi file default `backend.gs`.
 4. Salin isi kode dari file `backend.gs` (hasil download/clone) ke file `backend.gs` di editor.
-5. Buat file HTML baru: klik ikon **+** di sebelah kanan tulisan *"Files"*, pilih **HTML**, lalu beri nama `Index` (Apps Script otomatis membuat file `index.html`).
+5. Buat file HTML baru: klik ikon **+** di sebelah kanan tulisan _"Files"_, pilih **HTML**, lalu beri nama `Index` (Apps Script otomatis membuat file `index.html`).
 6. Salin isi kode dari file `index.html` (hasil download/clone) ke file `index.html` di editor.
 7. Simpan projek dengan tombol save (ikon disket) atau `Ctrl + S`.
 
@@ -170,23 +166,23 @@ Agar aplikasi terhubung ke Google Sheet yang spesifik:
 1. Di bilah menu kiri Apps Script Editor, klik ikon gigi roda **Project Settings**.
 2. Gulir ke bawah hingga bagian **Script Properties**.
 3. Klik tombol **Add script property**.
-4. Masukkan kolom *Property* dengan nama: `SPREADSHEET_ID`
-5. Masukkan kolom *Value* dengan ID Spreadsheet yang telah Anda salin di Langkah 1.
+4. Masukkan kolom _Property_ dengan nama: `SPREADSHEET_ID`
+5. Masukkan kolom _Value_ dengan ID Spreadsheet yang telah Anda salin di Langkah 1.
 6. Klik **Save script properties**.
 
-> **Catatan:** Jika Anda tidak mengatur properti ini, Apps Script secara otomatis akan mencoba menggunakan Spreadsheet yang terikat langsung (*active spreadsheet*).
+> **Catatan:** Jika Anda tidak mengatur properti ini, Apps Script secara otomatis akan mencoba menggunakan Spreadsheet yang terikat langsung (_active spreadsheet_).
 
 ### 4. Deploy sebagai Web App
 
 1. Klik tombol **Deploy** di bagian kanan atas editor Apps Script, lalu pilih **New deployment**.
-2. Klik ikon gigi roda (*Select type*) di samping kiri *"Configuration"*, pilih **Web app**.
+2. Klik ikon gigi roda (_Select type_) di samping kiri _"Configuration"_, pilih **Web app**.
 3. Isi kolom konfigurasi sebagai berikut:
 
-   | Konfigurasi | Nilai |
-   |---|---|
-   | **Description** | `Fintrack Deployment v1.0` |
-   | **Execute as** | `Me (email-anda@gmail.com)` |
-   | **Who has access** | `Anyone` — *diperlukan agar aplikasi web bisa diakses dan berinteraksi lancar dengan backend* |
+   | Konfigurasi        | Nilai                                                                                         |
+   | ------------------ | --------------------------------------------------------------------------------------------- |
+   | **Description**    | `Fintrack Deployment v1.0`                                                                    |
+   | **Execute as**     | `Me (email-anda@gmail.com)`                                                                   |
+   | **Who has access** | `Anyone` - _diperlukan agar aplikasi web bisa diakses dan berinteraksi lancar dengan backend_ |
 
 4. Klik tombol **Deploy**.
 5. Google akan meminta izin otorisasi akses spreadsheet: klik **Authorize Access**, pilih akun Google Anda, klik **Advanced** (di bagian bawah kiri), pilih **Go to Fintrack (unsafe)**, lalu klik **Allow**.
@@ -199,23 +195,23 @@ Agar aplikasi terhubung ke Google Sheet yang spesifik:
 Aplikasi web Anda akan kosong di awal. Agar Anda langsung dapat melihat visualisasi grafik dan rekap data bulanan:
 
 1. Kembali ke editor Apps Script Anda.
-2. Di baris menu atas editor, pilih fungsi `seedInitialData` pada dropdown pilihan fungsi (di sebelah kanan tombol *"Debug"*).
+2. Di baris menu atas editor, pilih fungsi `seedInitialData` pada dropdown pilihan fungsi (di sebelah kanan tombol _"Debug"_).
 3. Klik tombol **Run** (ikon segitiga/play).
-4. Setelah eksekusi sukses, periksa Google Spreadsheet Anda — muncul dua sheet baru bernama **Januari 2026** dan **Februari 2026** berisi data transaksi, beserta sheet **MASTER_REKAP** berisi rekapitulasi data dan budget bulanan.
+4. Setelah eksekusi sukses, periksa Google Spreadsheet Anda - muncul dua sheet baru bernama **Januari 2026** dan **Februari 2026** berisi data transaksi, beserta sheet **MASTER_REKAP** berisi rekapitulasi data dan budget bulanan.
 5. Buka kembali (atau muat ulang) Web app URL Anda. Rencana keuangan, ringkasan kartu, serta grafik tren pengeluaran 6 bulan terakhir akan terisi secara dinamis!
 
 ---
 
 ## Panduan Penggunaan
 
-| Aktivitas | Cara |
-|---|---|
+| Aktivitas              | Cara                                                                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **Menambah transaksi** | Pilih bulan pada UI, lalu tambahkan transaksi. Jika sheet bulan tersebut belum ada, sistem membuatnya otomatis (Auto-create Sheet). |
-| **Mengatur budget** | Klik tombol **(Ubah)** pada card *"Target Budget"* untuk bulan terpilih. Pengeluaran yang melebihi limit ditandai merah otomatis. |
-| **Menghapus data** | Data yang dihapus masuk ke sheet `TRASH` (soft delete) — tidak hilang permanen. |
-| **Memulihkan data** | Buka tombol **Sampah** di UI utama, lalu pulihkan entri yang diinginkan. |
-| **Ekspor laporan** | Unduh CSV secara lokal, atau gunakan link ekspor untuk langsung membuka tab sheet spesifik. |
-| **Melihat tren** | Grafik tren pengeluaran 6 bulan terakhir ter-update otomatis dari `MASTER_REKAP`. |
+| **Mengatur budget**    | Klik tombol **(Ubah)** pada card _"Target Budget"_ untuk bulan terpilih. Pengeluaran yang melebihi limit ditandai merah otomatis.   |
+| **Menghapus data**     | Data yang dihapus masuk ke sheet `TRASH` (soft delete) - tidak hilang permanen.                                                     |
+| **Memulihkan data**    | Buka tombol **Sampah** di UI utama, lalu pulihkan entri yang diinginkan.                                                            |
+| **Ekspor laporan**     | Unduh CSV secara lokal, atau gunakan link ekspor untuk langsung membuka tab sheet spesifik.                                         |
+| **Melihat tren**       | Grafik tren pengeluaran 6 bulan terakhir ter-update otomatis dari `MASTER_REKAP`.                                                   |
 
 ---
 
@@ -228,19 +224,19 @@ Setelah Anda mengedit kode (`backend.gs` atau `index.html`):
 3. Ubah **Version** menjadi **New version**.
 4. Klik **Deploy**.
 
-Web app URL Anda **tetap sama** — tidak perlu membagikan ulang link.
+Web app URL Anda **tetap sama** - tidak perlu membagikan ulang link.
 
 ---
 
 ## Troubleshooting
 
-| Masalah | Kemungkinan Penyebab | Solusi |
-|---|---|---|
-| Muncul peringatan *"Go to Fintrack (unsafe)"* saat otorisasi | Aplikasi belum diverifikasi Google | **Normal dan aman** selama Anda mengotorisasi aplikasi yang Anda deploy sendiri. Lanjutkan dengan *Advanced → Allow*. |
-| Data tidak muncul di aplikasi | `SPREADSHEET_ID` salah/kosong, atau seed belum dijalankan | Periksa Script Properties (Langkah 3), lalu jalankan `seedInitialData` (Langkah 5). |
-| Aplikasi error setelah edit kode | Deployment belum diperbarui | Buat **New version** di *Manage deployments* (lihat [Memperbarui Aplikasi](#memperbarui-aplikasi)). |
-| Pengguna lain tidak bisa mengakses | *Who has access* bukan `Anyone` | Deploy ulang dengan **Who has access: Anyone**. |
-| Transaksi bulan baru tidak tersimpan | — | Pastikan fitur Auto-create Sheet aktif; sheet bulan baru dibuat otomatis saat transaksi pertama disimpan. |
+| Masalah                                                      | Kemungkinan Penyebab                                      | Solusi                                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Muncul peringatan _"Go to Fintrack (unsafe)"_ saat otorisasi | Aplikasi belum diverifikasi Google                        | **Normal dan aman** selama Anda mengotorisasi aplikasi yang Anda deploy sendiri. Lanjutkan dengan _Advanced → Allow_. |
+| Data tidak muncul di aplikasi                                | `SPREADSHEET_ID` salah/kosong, atau seed belum dijalankan | Periksa Script Properties (Langkah 3), lalu jalankan `seedInitialData` (Langkah 5).                                   |
+| Aplikasi error setelah edit kode                             | Deployment belum diperbarui                               | Buat **New version** di _Manage deployments_ (lihat [Memperbarui Aplikasi](#memperbarui-aplikasi)).                   |
+| Pengguna lain tidak bisa mengakses                           | _Who has access_ bukan `Anyone`                           | Deploy ulang dengan **Who has access: Anyone**.                                                                       |
+| Transaksi bulan baru tidak tersimpan                         | -                                                         | Pastikan fitur Auto-create Sheet aktif; sheet bulan baru dibuat otomatis saat transaksi pertama disimpan.             |
 
 ---
 
@@ -271,7 +267,7 @@ Untuk bug atau usulan fitur, buka [Issues](https://github.com/Aaksaa/fintrack/is
 
 ## Lisensi
 
-© MIT
+© MIT License
 
 <!-- Jika projek ingin dibuka lisensinya, tambahkan file LICENSE (misalnya MIT) dan perbarui bagian ini. -->
 
@@ -279,9 +275,9 @@ Untuk bug atau usulan fitur, buka [Issues](https://github.com/Aaksaa/fintrack/is
 
 ## Tautan
 
-| | |
-|---|---|
+|            |                                                                  |
+| ---------- | ---------------------------------------------------------------- |
 | Repositori | [github.com/Aaksaa/fintrack](https://github.com/Aaksaa/fintrack) |
-| Teknologi | Google Apps Script + Google Sheets |
+| Teknologi  | Google Apps Script + Google Sheets                               |
 
 ---

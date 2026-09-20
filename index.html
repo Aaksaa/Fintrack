@@ -3,13 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ═══════ PRIMARY META TAGS ═══════ -->
     <title>Fintrack - Pencatatan Keuangan Sederhana & Gratis</title>
     <meta
-      name="description"
-      content="Aplikasi pencatatan keuangan pribadi berbasis web dan Google Sheets. Gratis, tanpa instalasi, dan data tersimpan aman di Google Drive Anda."
+      name="title"
+      content="Fintrack - Pencatatan Keuangan Sederhana & Gratis"
     />
-    <link rel="canonical" href="https://fintrack.app/" />
+    <meta
+      name="description"
+      content="Aplikasi pencatatan keuangan pribadi yang sederhana dan jujur. Gratis selamanya, berbasis Google Sheets - data Anda tetap menjadi milik Anda di Google Drive."
+    />
+    <meta name="author" content="Fintrack" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://aaksaa.github.io/fintrack/index.html" />
+
+    <!-- ═══════ OPEN GRAPH (Facebook / WhatsApp / Discord / LinkedIn) ═══════ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fintrack" />
+    <meta property="og:locale" content="id_ID" />
+    <meta
+      property="og:url"
+      content="https://aaksaa.github.io/fintrack/index.html"
+    />
+    <meta
+      property="og:title"
+      content="Fintrack - Pencatatan Keuangan Sederhana & Gratis"
+    />
+    <meta
+      property="og:description"
+      content="Catat keuangan pribadi tanpa ribet. Gratis selamanya, berbasis Google Sheets - data tetap jadi milik Anda."
+    />
+    <meta property="og:image" content="./assets/fintrack-logo.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Fintrack - aplikasi pencatatan keuangan berbasis Google Apps Script + Google Sheets"
+    />
+
+    <!-- ═══════ TWITTER CARD ═══════ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:url"
+      content="https://aaksaa.github.io/fintrack/index.html"
+    />
+    <meta
+      name="twitter:title"
+      content="Fintrack - Pencatatan Keuangan Sederhana & Gratis"
+    />
+    <meta
+      name="twitter:description"
+      content="Catat keuangan pribadi tanpa ribet. Gratis selamanya, data tersimpan di Google Sheets Anda sendiri."
+    />
+    <meta name="twitter:image" content="./assets/fintrack-logo.svg" />
+
+    <!-- ═══════ THEME & FAVICON ═══════ -->
+    <meta name="theme-color" content="#ffd02f" />
     <link rel="icon" href="./assets/fintrack-logo.svg" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="./assets/fintrack-logo.webp" />
 
     <!-- Tech Stack: Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1027,6 +1079,36 @@
           window.removeEventListener("scroll", this.handleScroll);
         },
       }).mount("#app");
+    </script>
+
+    <!-- ═══════ STRUCTURED DATA (JSON-LD) ═══════ -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Fintrack",
+        "description": "Aplikasi pencatatan keuangan pribadi berbasis Google Apps Script dan Google Sheets. Gratis selamanya, data tersimpan di Google Drive pengguna.",
+        "url": "https://aaksaa.github.io/fintrack/index.html",
+        "image": "./assets/fintrack-logo.svg",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "IDR"
+        },
+        "featureList": [
+          "Auto-create sheet bulanan",
+          "Budgeting dengan indikator limit",
+          "Trash bin (soft delete)",
+          "Ekspor CSV & Google Sheets"
+        ],
+        "author": {
+          "@type": "Organization",
+          "name": "Fintrack",
+          "url": "https://github.com/Aaksaa/fintrack"
+        }
+      }
     </script>
   </body>
 </html>
