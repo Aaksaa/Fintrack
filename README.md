@@ -27,6 +27,7 @@
 
 ---
 
+
 ## Daftar Isi
 
 - [Tentang Fintrack](#tentang-fintrack)
@@ -48,6 +49,8 @@
 ## Tentang Fintrack
 
 **Fintrack** adalah aplikasi pencatatan keuangan pribadi yang dirancang dengan satu filosofi sederhana: **data Anda tetap menjadi milik Anda**.
+
+[App Demo / Preview](https://aaksaa.github.io/Fintrack/src/index.html)
 
 Alih-alih menyimpan data di server pihak ketiga, Fintrack menggunakan **Google Sheets milik Anda sendiri** sebagai database. Seluruh logika aplikasi berjalan di **Google Apps Script** dan disajikan sebagai **Web App** yang bisa diakses dari browser mana pun - desktop maupun ponsel.
 
