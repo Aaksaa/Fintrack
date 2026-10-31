@@ -21,6 +21,8 @@
   <a href="https://github.com/Aaksaa/fintrack">Repositori</a>
 </p>
 
+> ⚠️ Repository ini sudah tidak di-maintain.
+
 ---
 
 > _Fintrack is a personal finance tracker that runs entirely on the Google ecosystem - Apps Script as the backend, Google Sheets as the database. Your data stays yours, stored in your own Google Drive._
